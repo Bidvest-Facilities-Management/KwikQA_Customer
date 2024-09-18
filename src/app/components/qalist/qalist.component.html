@@ -1,0 +1,51 @@
+<div class="ml-10 bg-gray-50 dark:bg-gray-900">
+    <ng-container *ngIf="apiserv.loadingBS.value > 0">
+            <h2>Loading data from the Server ...</h2>
+    </ng-container>
+    <ng-container *ngIf="( searchlist.length < 1 ) && apiserv.loadingBS.value == 0 ">
+            <h2>There are no Orders for your attention</h2>
+    </ng-container>
+    <ng-container *ngIf="hideDetail == false">    
+ 
+    </ng-container>
+    <ng-container *ngIf="searchlist.length > 0">
+            <div class="container ">
+
+                <div class="overflow-x-auto mt-4">
+                    <div class="flex justify-around mb-3">
+                        <input type="text" class="border border-gray-300 rounded-lg p-2 w-96" placeholder="Search"
+                            [(ngModel)]="searchbox" />
+                            <button type="button" class="p-1 h-10 mt-2 text-md rounded bg-green-500 text-white mr-4" (click)="exportexcel()">Export to Excel</button>
+                    </div>
+                    
+                            <table class="min-w-full bg-white" id="masterlist">
+                                <thead>
+                                    <tr class="bg-gray-800 text-white">
+                                        <th (dblclick)="sortBy('ORDERNO')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Order Number</th>
+                                        <th (dblclick)="sortBy('FLOCTXT')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Site Name</th>
+                                        <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Short Text</th>
+                                        <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Vendor</th>
+                                        <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Vendor Name</th>
+                                        <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Order Status</th>
+                                        <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">SLA Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="text-gray-700">
+                                    <tr  *ngFor="let orderview of searchlistnew  | searchpipe: [searchbox, 'tag']" class="border-b hover:bg-gray-100 transition duration-300 ease-in-out">
+                                        <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.ORDERNO}}</td>
+                                        <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.FLOCTXT}}</td>
+                                        <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.SHORTTEXT}}</td>
+                                        <td class="py-3 px-4 text-sm">{{orderview.WORKCENTRE}}</td>
+                                        <td class="py-3 px-4 text-sm">{{orderview.VNAME}}</td>
+                                        <td class="py-3 px-4 text-sm"><span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">{{orderview.ORDERSTATUS}}</span></td>
+                                        <td class="py-3 px-4 text-sm">{{orderview.SLADATE}}</td>
+                                    </tr>
+                                    
+                                    <!-- Add more rows as needed -->
+                                </tbody>
+                            </table>
+                    </div>
+            </div>
+    </ng-container>
+
+</div>

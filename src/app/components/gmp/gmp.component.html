@@ -1,0 +1,112 @@
+
+
+<!-- <div class="container mx-auto p-4">
+<button class="bg-blue-500 dard:bg-slate-900 text-white px-4 py-2 rounded" (click)="openModal()">Open Modal</button>
+
+<div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center">
+<div class="bg-white dark:bg-gray-900 dark:text-gray-100 p-8 rounded-lg shadow-lg max-w-600   w-full  relative">
+<h2 class="text-2xl font-bold mb-4">Modal Title</h2>
+<button class="absolute top-2 right-2 text-gray-600 hover:text-gray-900">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+        <path stroke-linecap="round" stroke-linejoin="round" d="m9.75 9.75 4.5 4.5m0-4.5-4.5 4.5M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+      </svg>      
+</button>
+<p class="mb-6">This is just a simple Modal</p>
+
+</div>
+
+
+
+
+</div>
+
+
+</div> -->
+ <div class="flex justify-center bg-blue-100 py-2">
+<div class="inline-flex space-x-10">
+  <label class="inline-flex items-center">
+    <span class="mr-2">Oneview 1</span>
+    <input type="text" class="form-checkbox" placeholder="Site 1" [(ngModel)]="filter1">
+   
+  </label>
+  <label class="inline-flex items-center">
+    <span class="mr-2">Oneview 2</span>
+    <select [ngModel]="filter2"  (ngModelChange)="onChange($event)">
+      <option *ngFor="let serv of servicelines" [value]="serv">{{serv}}</option>
+    
+  </select>
+    
+  </label>
+ <button class="bg-blue-500 dard:bg-slate-900 text-white px-4 py-2 rounded" (click)="fetchDatal()">Fetch Data</button>
+</div>
+</div> 
+<div class="container mx-auto p-4">
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" class="mb-8">
+      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <ng-container *ngFor="let control of form.controls | keyvalue">
+          <div class="mb-2">
+            <label [for]="control.key" class="block text-sm font-medium text-gray-700">{{ getDisplayName(control.key)}}</label>
+            <input [id]="control.key" [formControlName]="control.key" type="text" 
+                   class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-1.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" 
+                   [class]="{'border-red-500': form.get(control.key)?.invalid && (form.get(control.key)?.dirty || form.get(control.key)?.touched)}">
+            <div *ngIf="hasError(control.key, 'required') && (form.get(control.key)?.dirty || form.get(control.key)?.touched)" 
+                 class="text-red-500 text-xs mt-1">
+              This field is required.
+            </div>
+            <div *ngIf="hasError(control.key, 'maxlength') && (form.get(control.key)?.dirty || form.get(control.key)?.touched)" 
+                 class="text-red-500 text-xs mt-1">
+              Maximum length is 80 characters.
+            </div>
+          </div>
+        </ng-container>
+      </div>
+      <button type="submit" [disabled]="form.invalid"
+              class="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ editIndex !== null ? 'Update' : 'Add' }} Item
+      </button>
+    </form>
+    <div class="overflow-x-auto" >
+      <table class="table-auto w-full text-xs">
+        <thead class="bg-gray-200">
+          <tr>
+            <th *ngFor="let header of defarray " class="px-2 py-1 text-left">{{ header.displayname }}</th>
+            <th class="px-2 py-1 text-left">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of items; let i = index" class="border-b">
+            <td *ngFor="let field of defarray " class="px-2 py-0.5" [class]="field.key=='TRADE'?'text-right': ''"  (click)="shoutout(field)">
+              {{ item[field.field]}}</td>
+            <td class="px-2 py-0.5">
+              <button (click)="editItem(i)" class="mr-2 px-3 py-0.5 bg-yellow-500 text-white rounded hover:bg-yellow-600">Edit</button>
+              <button (click)="deleteItem(i)" class="px-3 py-0.5 bg-red-500 text-white rounded hover:bg-red-600">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="container mx-auto p-4">
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Field</th>
+        <th>Display Name</th>
+        <th>Type</th>
+        <th>Req</th>
+        <th>Max</th>
+        <th>Min</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let def of defarray; let i = index" class="border-b">
+        <td class="px-2 py-0.5" > <input name="fldx1{{i}}" [(ngModel)]="defarray[i].field" type="text"> </td>
+        <td class="px-2 py-0.5" > <input name="fldx2{{i}}" [(ngModel)]="defarray[i].displayname" type="text"></td>
+        <td class="px-2 py-0.5" > <input name="fldx3{{i}}" [(ngModel)]="defarray[i].type" type="text"> </td>
+        <td class="px-2 py-0.5" > <input name="fldx4{{i}}" [(ngModel)]="defarray[i].required" type="checkbox"> </td>
+        <td class="px-2 py-0.5" > <input name="fldx5{{i}}" [(ngModel)]="defarray[i].minLength" type="text"> </td>
+    </tbody>
+  </table>
+   <button (click)="saveDef()" class="px-3 py-0.5 bg-red-500 text-white rounded hover:bg-red-600"> Save Definition </button>
+  </div>

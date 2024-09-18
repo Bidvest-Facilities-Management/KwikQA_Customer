@@ -1,0 +1,6 @@
+.chat-input {
+    min-height: 40px;
+    max-height: 160px;
+    resize: none;
+    overflow-y: hidden;
+}
