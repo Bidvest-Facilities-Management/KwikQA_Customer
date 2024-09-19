@@ -1,5 +1,6 @@
 import { Component, EventEmitter, ElementRef, ViewChild } from '@angular/core';
 import { ChatComponent } from '../../components/chat/chat.component';
+import { FormsModule, ReactiveFormsModule  } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
 import { MobilityService } from '../../_services/mobility.service';
 import { Subscription } from 'rxjs';
@@ -11,7 +12,7 @@ import { LightboxModule, Lightbox } from 'ngx-lightbox';
 @Component({
   selector: 'app-mobileview',
   standalone: true,
-  imports: [ChatComponent, CommonModule, LightboxModule],
+  imports: [ChatComponent, CommonModule, LightboxModule, FormsModule, ReactiveFormsModule],
   templateUrl: './mobileview.component.html',
   styleUrl: './mobileview.component.css',
 })
@@ -26,14 +27,16 @@ export class MobileviewComponent {
     subs: Subscription[] = [];
     lastcomment = {lastreply: '' };
     orderno = '000411935489'
+    canAddMaterial: boolean = false;
+    role: string = ''
     @ViewChild('content', { static: false }) content!: ElementRef;
 
     constructor(private apiserv:ApiService,
-      private authserv: AuthservService,
-      public mobileserv:MobilityService,
-      private route: ActivatedRoute,
-      private router:Router,
-      private lightbox: Lightbox
+        private authserv: AuthservService,
+        public mobileserv:MobilityService,
+        private route: ActivatedRoute,
+        private router:Router,
+        private lightbox: Lightbox
     ) { }
   
     
@@ -44,11 +47,14 @@ export class MobileviewComponent {
                 this.loadingBS = item;
             })
         );
-      
+        this.canAddMaterial = this.authserv.role === 'FINVIEW' || this.authserv.role === 'ATCFIN'
+        this.role = this.authserv.role
     }
+
     ngOnDestroy(): void {
         this.subs.forEach(sub => sub.unsubscribe());
     };
+
     closeDialog(){
         this.router.navigate(['/home']);
     }
@@ -81,6 +87,19 @@ export class MobileviewComponent {
 
     exportToPDF(): void {
         window.print();
+    }
+
+    removeMaterial(index: number) {
+        this.mobileserv.materialsused.splice(index, 1);
+    }
+      
+    addMaterial() {
+        this.mobileserv.materialsused.push({
+            material: '',
+            description: '',
+            quantity: 0,
+            price: 0
+        });
     }
 }
   

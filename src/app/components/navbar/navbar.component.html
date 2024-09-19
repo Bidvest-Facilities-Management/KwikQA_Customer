@@ -1,21 +1,14 @@
-
 <header>
-
-   
-        <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
-            <img class="w-30 h-10 mr-4 rounded-md" src="https://wapps.bidvestfm.co.za/assets/images/logo2small.png" alt="logo">
-            
-        </a>
-
-  <nav>
-     <ul>
-         <li *ngFor="let item of menulist"><span (click)="goToPanel(item.link)" class="text-sm text-white">{{item.name}}</span></li>
-        
-     </ul>
-  </nav>  
-  <ul>
-    <li> <span class="text-sm text-white">{{username}} </span></li>
-    <li><span (click)="goto('logout')"class="text-sm text-white">Logout</span></li>
-
-  </ul>        
+    <a href="#" class="flex items-center mb-6 text-2xl font-semibold text-gray-900 dark:text-white">
+        <img class="w-30 h-10 mr-4" src="https://wapps.bidvestfm.co.za/assets/images/logo2small.png" alt="logo"> 
+    </a>
+    <nav>
+        <ul>
+            <li *ngFor="let item of menulist"><span (click)="goToPanel(item.link)" class="text-sm text-white cursor-pointer">{{item.name}}</span></li>
+        </ul>
+    </nav>  
+    <ul>
+        <li> <span class="text-sm text-white">{{username}} </span></li>
+        <li><span (click)="goto('logout')"class="text-sm text-white">Logout</span></li>
+    </ul>        
 </header>

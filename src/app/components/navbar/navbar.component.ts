@@ -17,7 +17,7 @@ export class NavbarComponent {
   @Output() changePanel = new EventEmitter<any>();
   thetable='ZKEY_VALUE';
   username = '';
-
+  isMobileMenuOpen = false;
  
  constructor(public router: Router, private apiserv: ApiService, private authserv: AuthservService) {
   }
@@ -30,6 +30,10 @@ export class NavbarComponent {
   }
   ngOnInit() {
     this.username = this.authserv.currentUserBS.value.USERNAME;
+  }
+
+  toggleMobileMenu() {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
   }
 }
     
