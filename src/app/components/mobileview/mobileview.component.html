@@ -64,16 +64,19 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             <tr *ngFor="let material of mobileserv.materialsused; let i = index">
                                 <td class="px-1.5 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    <ng-container *ngIf="canAddMaterial; else viewOnlyMaterial">
-                                        <input [(ngModel)]="material.material" class="border rounded px-2 py-1 w-full">
-                                    </ng-container>
-                                    <ng-template #viewOnlyMaterial>{{ material.material }}</ng-template>
+                                    {{ removeLeadingZeros(material.material) }}
                                 </td>
                                 <td class="px-1.5 whitespace-nowrap text-sm text-gray-500">
                                     <ng-container *ngIf="canAddMaterial; else viewOnlyDescription">
-                                        <input [(ngModel)]="material.description" class="border rounded px-2 py-1 w-full">
+                                        <select [(ngModel)]="material.description" (ngModelChange)="onDescriptionChange(material, i)" class="border rounded px-2 py-1 w-full">
+                                            <option value="" selected disabled>Select material</option>
+                                            <option *ngIf="material.description" [ngValue]="material.description" >{{ material.description }}</option>
+                                            <option *ngFor="let option of getFilteredMaterials(material.description)" [ngValue]="option.description">
+                                                {{option.description}}
+                                            </option>
+                                        </select>
                                     </ng-container>
-                                    <ng-template #viewOnlyDescription>{{ material.description || 'Under Construction' }}</ng-template>
+                                    <ng-template #viewOnlyDescription>{{ material.description }}</ng-template>
                                 </td>
                                 <td class="px-1.5 whitespace-nowrap text-sm text-gray-500" *ngIf="role !== 'BFMQA'">
                                     <ng-container *ngIf="canAddMaterial; else viewOnlyQuantity">
@@ -83,9 +86,9 @@
                                 </td>
                                 <td class="px-1.5 whitespace-nowrap text-sm text-gray-500" *ngIf="role !== 'BFMQA'">
                                     <ng-container *ngIf="canAddMaterial; else viewOnlyPrice">
-                                        <input type="number" [(ngModel)]="material.price" class="border rounded px-2 py-1 w-full" placeholder="TBA">
+                                        <input type="number" [(ngModel)]="material.price" class="border rounded px-2 py-1 w-full">
                                     </ng-container>
-                                    <ng-template #viewOnlyPrice>{{ material.price || 'TBA' }}</ng-template>
+                                    <ng-template #viewOnlyPrice>{{ material.price}}</ng-template>
                                 </td>
                                 <td *ngIf="canAddMaterial || role !== 'BFMQA'" class="px-1.5 whitespace-nowrap text-sm text-gray-500" >
                                     <button (click)="removeMaterial(i)" class="text-red-500 hover:text-red-700">Remove</button>

@@ -6,34 +6,38 @@ import { ApiService } from '../../_services/api.service';
 import { AuthservService } from '../../_services/authserv.service';
 
 @Component({
-  selector: 'app-navbar',
-  standalone: true,
-  imports: [CommonModule,FormsModule],
-  templateUrl: './navbar.component.html',
-  styleUrl: './navbar.component.css'
+    selector: 'app-navbar',
+    standalone: true,
+    imports: [CommonModule,FormsModule],
+    templateUrl: './navbar.component.html',
+    styleUrl: './navbar.component.css'
 })
 export class NavbarComponent {
-  @Input() menulist: any[] = [];
-  @Output() changePanel = new EventEmitter<any>();
-  thetable='ZKEY_VALUE';
-  username = '';
-  isMobileMenuOpen = false;
- 
- constructor(public router: Router, private apiserv: ApiService, private authserv: AuthservService) {
-  }
- 
-  goto(url: string) {
-    this.router.navigate([url]);
-  }
- goToPanel(configSection: any = 200) {
-    this.changePanel.emit(configSection);
-  }
-  ngOnInit() {
-    this.username = this.authserv.currentUserBS.value.USERNAME;
-  }
+    @Input() menulist: any[] = [];
+    @Output() changePanel = new EventEmitter<any>();
+    thetable='ZKEY_VALUE';
+    username = '';
+    isMobileMenuOpen = false;
+    activeItem: string = '';
+    
+    constructor(public router: Router, private apiserv: ApiService, private authserv: AuthservService) {
+    }
+    
+    ngOnInit() {
+        this.username = this.authserv.currentUserBS.value.USERNAME;
+    }
+    
+    goto(url: string) {
+        this.router.navigate([url]);
+    }
 
-  toggleMobileMenu() {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  }
+    goToPanel(configSection: string) {
+        this.changePanel.emit(configSection);
+        this.activeItem = configSection;
+    }
+
+    isActive(status: string): boolean {
+        return this.activeItem === status;
+    }
 }
     

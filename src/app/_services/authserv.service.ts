@@ -23,7 +23,7 @@ export class AuthservService {
     apikey: string = GlobalConstants.apikey;
     token: string = '';
     role: string = GlobalConstants.role;
-    private blankuser: USER = this.getBlankuser();
+    blankuser: USER = this.getBlankuser();
     callback: string = '';
     okloginBS = new BehaviorSubject<string>('');
     doc = window.location.href;

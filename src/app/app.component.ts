@@ -30,6 +30,7 @@ export class AppComponent {
         this.apiserv.setEnvironment();
         this.authserv.setUser();
         this.mobserv.getBasics();
+        this.mobserv.getConfigValues();
     }
 
 }

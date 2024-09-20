@@ -17,6 +17,7 @@ import { LightboxModule, Lightbox } from 'ngx-lightbox';
   styleUrl: './mobileview.component.css',
 })
 export class MobileviewComponent {
+
     // @Input() orderno = '000411935489'
     // @Input() token = '';
     // @Input() filter = 'ALL';
@@ -28,7 +29,15 @@ export class MobileviewComponent {
     lastcomment = {lastreply: '' };
     orderno = '000411935489'
     canAddMaterial: boolean = false;
+    filteredMaterials: any [] = []
+    selectedDescription: string = '';
     role: string = ''
+    newMaterial: any = {
+        material: '',
+        description: '',
+        quantity: 0,
+        price: null
+    };
     @ViewChild('content', { static: false }) content!: ElementRef;
 
     constructor(private apiserv:ApiService,
@@ -57,6 +66,10 @@ export class MobileviewComponent {
 
     closeDialog(){
         this.router.navigate(['/home']);
+    }
+
+    removeLeadingZeros(text: string) {
+        return text.replace(/^0+/, "");
     }
 
     approveOrder(){ 
@@ -92,14 +105,31 @@ export class MobileviewComponent {
     removeMaterial(index: number) {
         this.mobileserv.materialsused.splice(index, 1);
     }
-      
+
+    getMaterialDescription(materialId: string): string {
+        const material = this.mobileserv.materials.find(m => m.MATNR === materialId);
+        return material ? material.MAKTX : null;
+    }
+    
     addMaterial() {
         this.mobileserv.materialsused.push({
             material: '',
             description: '',
-            quantity: 0,
-            price: 0
+            quantity: '',
+            price: ''
         });
+    }
+
+    onDescriptionChange(material: any, index: number) {
+        const selectedMaterial = this.mobileserv.materials.find(m => m.description === material.description);
+        if (selectedMaterial) {
+            material.material = this.removeLeadingZeros(selectedMaterial.material);
+            // You might want to update other fields like price if needed
+        }
+    }
+
+    getFilteredMaterials(currentDescription: string): any[] {
+        return this.mobileserv.materials.filter(m => m.description !== currentDescription);
     }
 }
   

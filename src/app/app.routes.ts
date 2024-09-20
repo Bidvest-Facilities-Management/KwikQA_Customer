@@ -3,8 +3,7 @@ import { LoginComponent } from './components/login/login.component';
 import { HomeComponent } from './components/home/home.component';
 import { ContentComponent } from './components/content/content.component';
 import { TestComponent } from './components/test/test.component';
-
-import { MobileviewComponent } from './component/mobileview/mobileview.component';
+import { MobileviewComponent } from './components/mobileview/mobileview.component';
 
 export const routes: Routes = [
 
