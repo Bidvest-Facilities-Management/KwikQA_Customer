@@ -1,12 +1,18 @@
 <div class="ml-10 bg-gray-50 dark:bg-gray-900">
     <ng-container *ngIf="apiserv.loadingBS.value > 0">
-            <h2>Loading data from the Server ...</h2>
+        <div class="absolute h-full inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
     </ng-container>
     <ng-container *ngIf="( searchlist.length < 1 ) && apiserv.loadingBS.value == 0 ">
-            <h2>There are no Orders for your attention</h2>
+        <div class="absolute h-full inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
     </ng-container>
-    <ng-container *ngIf="hideDetail == false">    
- 
+    <ng-container *ngIf="loading == true">    
+        <div class="absolute h-full inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+            <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+        </div>
     </ng-container>
     <ng-container *ngIf="searchlist.length > 0">
         <div class="container ">
@@ -34,13 +40,23 @@
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.FLOCTXT}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.SHORTTEXT}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.WORKCENTRE}}</td>
-                            <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.VNAME}}</td>
+                            <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.HHUSER}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer"><span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">{{orderview.ORDERSTATUS}}</span></td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.SLADATE}}</td>
                         </tr>
                     </tbody>
                 </table>
             </div>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="searchlist == 0">
+        <div class="flex flex-col h-screen items-center justify-center bg-gray-100 rounded-lg shadow-inner">
+            <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No items to display</h3>
+            <p class="text-sm text-gray-500 text-center mb-4">There are currently no items in the list. Click the on tab buttons above to see items.</p>
         </div>
     </ng-container>
 

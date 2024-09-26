@@ -1,8 +1,8 @@
-import { LocationStrategy } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, map, take } from 'rxjs';
+import { VariablesStateService } from './variables-state.service';
+import { BehaviorSubject, map, } from 'rxjs';
 import { GlobalConstants } from '../globalconstants';
 
 @Injectable({
@@ -18,14 +18,17 @@ export class ApiService {
 
     confListBS = new BehaviorSubject<any[]>([]);
     confList$ = this.confListBS.asObservable();
-
     chats: any[] = [];
     chat$ = new BehaviorSubject<any>(this.chats);
+
+    private callback = new BehaviorSubject<any[]>([]);
+    callback$ = this.callback.asObservable();
 
     tablename = 'ZKEY_VALUE';
     constructor(private http: HttpClient,
         private route: ActivatedRoute,
         private router: Router,
+        private varStateService: VariablesStateService
     
     ) {
     this.setEnvironment();
@@ -35,14 +38,14 @@ export class ApiService {
     /***************************************************** */
     setEnvironment() {
         if ( this.environment == '') {
-        this.devprod = (this.doc.toUpperCase().includes('DEV') || this.doc.toUpperCase().includes('LOCAL')) ? 'dev' : 'prod';
-        this.environment = GlobalConstants.environment + this.devprod;  " key to the LocalStorage Items";
-        this.apikey = GlobalConstants.apikey;
+            this.devprod = (this.doc.toUpperCase().includes('DEV') || this.doc.toUpperCase().includes('LOCAL')) ? 'dev' : 'prod';
+            this.environment = GlobalConstants.environment + this.devprod;  " key to the LocalStorage Items";
+            this.apikey = GlobalConstants.apikey;
         }
     }
     /*******postJSGen** Return non-array***************************************************** */
     postGEN(lclobj: any, methodname: string, classname: string = "KWIK", dest = this.devprod) {
-        let url = 'https://io.bidvestfm.co.za/BIDVESTFM_API_ZRFC3/request?sys=' + dest
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + 'prod'
         const httpOptions = {
         headers: new HttpHeaders({
             'Content-Type': 'application/json',
@@ -50,17 +53,15 @@ export class ApiService {
         })
         };
         const call2 = {
-        context: {
-            CLASS: classname,
-            TOKEN: 'BK175mqMN0',
-            METHOD: methodname
-        },
-        data: lclobj
-
+            context: {
+                CLASS: classname,
+                TOKEN: 'BK175mqMN0',
+                METHOD: methodname
+            },
+            data: lclobj
         };
 
-        let mypost = this.http.post(url,
-        call2, httpOptions);
+        let mypost = this.http.post(url,call2, httpOptions);
 
         return mypost.pipe(
         map(data => {
@@ -90,7 +91,7 @@ export class ApiService {
     getTable(tablename: string = '') {
         let lclobj = { PERIOD: '60DAYS', FILTER: 'HCOM' }
         let tstr = this.devprod == 'PROD' ? 'prod' : 'prod';
-        let url = 'https://io.bidvestfm.co.za/BIDVESTFM_API_ZRFC3/request?sys=' + tstr;
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
 
         return tablename != '60DAYS' ? this.postGEN(lclobj, 'GET_QALIST', 'KWIK', url) : this.postGEN(lclobj, 'GET_GMP', 'CONFIG', url);
     }
@@ -110,66 +111,75 @@ export class ApiService {
             if (!reply || reply.RESULT.length == 0) {
                 return
             }
+            console.log(reply.RESULT)
             this.confListBS.next(reply.RESULT);
             this.loadingBS.next(this.loadingBS.value - 1);
         })
     }
-    /*********************** */
-    FailQAPOD(orderno = '', Reason = 'Reason Unknown') {
-        let callobj = {
-            ORDERNO: orderno,
-            REASON: Reason,
-            TOKEN: this.currentuser.TOKEN
-        }
 
-        this.postGEN(callobj, "QAFAIL", "KWIK").subscribe(reply => {
-        if (!reply || reply.RESULT.length == 0) {
-            return
-        }
-        //this.ordersBS.next(reply.RESULT);
+    getConfirmationList(context: any, data: any) {
+        this.varStateService.changeLoading(true);
+        this.loadingBS.next(this.loadingBS.value + 1);
+        this.postGEN(data, context.METHOD, context.CLASS).subscribe(reply => {
+            // if (!reply || reply.RESULT.length == 0) {
+            //     return
+            // }
+            this.confListBS.next(reply.RESULT);
+            this.loadingBS.next(this.loadingBS.value - 1);
+            this.varStateService.changeLoading(false);
         })
     }
-    /******************************************** */
 
-    approveQAPOD(orderno = '', Reason = 'Reason Unknown') {
-        let callobj = {
-        ORDERNO: orderno,
-        REASON: Reason,
-        TOKEN: this.currentuser.TOKEN
-        }
-
-        this.postGEN(callobj, "SEND_TO_VENDORFIN", "KWIK_ACTIONS").subscribe(reply => {
-        if (!reply || reply.RESULT.length == 0) {
-            return
-        }
-        //this.ordersBS.next(reply.RESULT);
+    saveMaterials(context: any, data: any) {
+        this.postGEN(data, context.METHOD, context.CLASS).subscribe(reply => {
+            this.callback.next(reply.RESULT);
         })
     }
-    /******************************************** */
+
+    rejectQAPOD(context: any, data: any) {
+      
+        this.postGEN(data, context.METHOD, context.CLASS).subscribe(reply => {
+            if (!reply || reply.RESULT.length == 0) {
+                return
+            }
+            //this.ordersBS.next(reply.RESULT);
+        })
+    }
+
+    approveQAPOD(context: any, data: any) {
+
+        this.postGEN(data, context.METHOD, context.CLASS).subscribe(reply => {
+            if (!reply || reply.RESULT.length == 0) {
+                return
+            }
+            //this.ordersBS.next(reply.RESULT);
+        })
+    }
+
     xtdbtoa(instring: string) {
         if (instring && instring.length > 0) {
-        try {
-            return btoa(encodeURIComponent(instring))
-        } catch (err) {
-            //   this.messagesBS.next('Conversion Failed' + instring)
-        }
-        return '';
+            try {
+                return btoa(encodeURIComponent(instring))
+            } catch (err) {
+                //   this.messagesBS.next('Conversion Failed' + instring)
+            }
+            return '';
         } else {
-        return '';
+            return '';
         }
     }
 
     xtdatob(instring: string, idno = '0') {
         if (instring && instring.length > 0) {
-        try {
-            console.log(idno + '-' + instring)
-            return atob(decodeURIComponent(instring))
-        } catch (err) {
-            //      this.messagesBS.next('Conversion Failed' + instring)
-        }
-        return '';
+            try {
+                //console.log(idno + '-' + instring)
+                return atob(decodeURIComponent(instring))
+            } catch (err) {
+                //      this.messagesBS.next('Conversion Failed' + instring)
+            }
+            return '';
         } else {
-        return '';
+            return '';
         }
     }
 }

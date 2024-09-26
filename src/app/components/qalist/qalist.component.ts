@@ -7,6 +7,7 @@ import { SearchpipePipe } from '../../_helpers/searchpipe';
 import * as XLSX from 'xlsx';
 import { MobileviewComponent } from '../mobileview/mobileview.component';
 import { AuthservService } from '../../_services/authserv.service';
+import { VariablesStateService } from '../../_services/variables-state.service';
 import { Router } from '@angular/router';
 
 @Component({
@@ -19,7 +20,7 @@ import { Router } from '@angular/router';
 export class QalistComponent {
     @Input() status = 'HCOM';
     subscriptions: Subscription[] = [];
-    searchlist:any[] = [];
+    searchlist:any = 'empty';
     searchlistnew :any[] = [];
     searchlistbase :any[] = [];
     statelevel = 0;
@@ -27,29 +28,38 @@ export class QalistComponent {
     fileName = 'Notifs-list.xlsx';
     searchbox = '';
     currentorderno = '000407091452';
-    hideDetail = false
+    loading = false
+    varSubscription: Subscription;
     
-    constructor(public apiserv:ApiService, public authserv:AuthservService, private router:Router) { }
+    constructor(
+        public apiserv:ApiService, 
+        public authserv:AuthservService, 
+        private router:Router,
+        private varStateService: VariablesStateService
+    ) { }
+
     ngOnInit(): void {
-        
-        this.subscriptions.push(
-        this.apiserv.confList$.subscribe((reply) => {
+        this.subscriptions.push( this.apiserv.confList$.subscribe((reply) => {
             this.searchlist = [];
             if (reply) {
                 let tempreply = [...reply]
                 tempreply.forEach((ele: any) => {
                     let element = JSON.parse(JSON.stringify(ele))
-                    element['ORDERNO'] = element['ORDERNO'].replaceAll(/^0+/g, "")
+                    element['ORDERNO'] = element['ORDERNO']?.replaceAll(/^0+/g, "") || element['AUFNR']?.replaceAll(/^0+/g, "")
                     element['tag'] = Object.values(element).join('-');
+                    element['WORKCENTRE'] = element?.['WORKCENTRE'] || element['RESOURCE']
+                    element['SHORTTEXT'] = element?.['SHORTTEXT'] || element['QMTXT']
+                    element['SLADATE'] = element?.['SLADATE'] || element['ERDAT']
                     this.searchlist.push(JSON.parse(JSON.stringify(element)));
                 });
             }
             this.searchlistnew = this.searchlist;
-
+            this.loading = false
         }));
-    }
-    ngOnDestroy(): void {
-        
+
+        this.varSubscription = this.varStateService.loading.subscribe(value => {
+            this.loading = value
+        });
     }
 
     showmobile(orderview: any = {}){
@@ -95,10 +105,6 @@ export class QalistComponent {
             })
             this.sortorder = '';
         }
-    }
-
-    closeDetail(){
-        this.hideDetail = true;
     }
 
 } 

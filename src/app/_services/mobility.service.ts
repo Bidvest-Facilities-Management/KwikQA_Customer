@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ApiService } from './api.service';
 import { BehaviorSubject, map, take } from 'rxjs';
+import { VariablesStateService } from './variables-state.service';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,10 @@ export class MobilityService {
     devprod = 'dev';
     sitedetail = {caseid:'', location:''};
 
-    constructor(private apiserv: ApiService) {}
+    constructor(
+        private apiserv: ApiService,  
+        private varStateService: VariablesStateService
+    ) {}
 
     getBasics(token = '') {
         this.devprod = this.apiserv.devprod == 'dev' ? 'dev' : 'prod';
@@ -29,8 +33,9 @@ export class MobilityService {
         if (!reply || reply.RESULT.length == 0) {
             return
         }
-        this.techactivitycodes = reply.RESULT;
+            this.techactivitycodes = reply.RESULT;
         })
+        
     } 
     /******************************************************* */
     filterActivityCodes(activitytype = '') {
@@ -39,6 +44,7 @@ export class MobilityService {
     }
     /***************************************************** */
     getExistingView(orderno = '') {
+        this.varStateService.changeLoading(true);
         this.photosloaded = [];
         this.materialsused = [];
         this.loadedview = {};
@@ -89,6 +95,7 @@ export class MobilityService {
                 this.prooftype = 'document';
             }
             this.filterActivityCodes(data.RESULT.ACTIVITY_TYPE);
+            this.varStateService.changeLoading(false);
         });
     }
     /***************************************************** */
@@ -103,7 +110,7 @@ export class MobilityService {
     }
 
     getConfigValues() {
-        this.apiserv.postGEN({ FILTER: "ATCKWIKQACONFIG" }, "GET_CONFIG", "KWIK_QA", this.devprod).subscribe(reply => {
+        this.apiserv.postGEN({ FILTER: "ATCKWIKQACONFIGPORTAL" }, "GET_CONFIG", "KWIK_QA", this.devprod).subscribe(reply => {
             this.apiserv.loadingBS.next(this.apiserv.loadingBS.value - 1);
             if (!reply || reply.RESULT.length == 0) {
                 return

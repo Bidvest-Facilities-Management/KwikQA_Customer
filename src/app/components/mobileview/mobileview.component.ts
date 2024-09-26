@@ -8,20 +8,19 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AuthservService } from '../../_services/authserv.service';
 import { LightboxModule, Lightbox } from 'ngx-lightbox';
+import { VariablesStateService } from '../../_services/variables-state.service';
+import { ToastComponent } from '../toast/toast.component';
+import axios from 'axios';
 
 @Component({
   selector: 'app-mobileview',
   standalone: true,
-  imports: [ChatComponent, CommonModule, LightboxModule, FormsModule, ReactiveFormsModule],
+  imports: [ChatComponent, CommonModule, LightboxModule, FormsModule, ReactiveFormsModule, ToastComponent],
   templateUrl: './mobileview.component.html',
   styleUrl: './mobileview.component.css',
 })
 export class MobileviewComponent {
 
-    // @Input() orderno = '000411935489'
-    // @Input() token = '';
-    // @Input() filter = 'ALL';
-    // @Output() closer = new EventEmitter();
     token = this.authserv.currentuser.TOKEN
     filter="HCOM" 
     loadingBS = 0
@@ -30,22 +29,29 @@ export class MobileviewComponent {
     orderno = '000411935489'
     canAddMaterial: boolean = false;
     filteredMaterials: any [] = []
-    selectedDescription: string = '';
-    role: string = ''
+    activeItem: string = '';
+    editingPrice: number | null = null;
+    loading: boolean = false
     newMaterial: any = {
         material: '',
         description: '',
         quantity: 0,
         price: null
     };
+    varSubscription: Subscription;
     @ViewChild('content', { static: false }) content!: ElementRef;
+
+    toastMessage: string = '';
+    toastType: 'success' | 'error' | 'info' = 'info';
+    isToastVisible: boolean = false;
 
     constructor(private apiserv:ApiService,
         private authserv: AuthservService,
         public mobileserv:MobilityService,
         private route: ActivatedRoute,
         private router:Router,
-        private lightbox: Lightbox
+        private lightbox: Lightbox,
+        private varStateService: VariablesStateService
     ) { }
   
     
@@ -56,8 +62,22 @@ export class MobileviewComponent {
                 this.loadingBS = item;
             })
         );
-        this.canAddMaterial = this.authserv.role === 'FINVIEW' || this.authserv.role === 'ATCFIN'
-        this.role = this.authserv.role
+        
+        this.varSubscription = this.varStateService.currentActiveMenuItem.subscribe(menuItem => {
+            this.activeItem = menuItem
+            this.canAddMaterial = menuItem !== 'Confirmations'
+        });
+
+        this.varSubscription = this.varStateService.loading.subscribe(value => {
+            this.loading = value
+        });
+    }
+
+    
+
+    hasAnyRole(roles: string[]): boolean {
+        const userRoles = this.authserv.blankuser.ROLELINKS.join(' ');
+        return roles.some(role => userRoles.includes(role));
     }
 
     ngOnDestroy(): void {
@@ -73,15 +93,37 @@ export class MobileviewComponent {
     }
 
     approveOrder(){ 
-        this.apiserv.approveQAPOD(this.orderno, this.lastcomment.lastreply);
-        this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
-        this.closeDialog();
+        if (this.activeItem === 'BFM Finance') {
+            const context = { CLASS: 'KWIK_ACTIONS', METHOD: 'SEND_TO_ATCFIN' }
+            const data = { ORDERNO: this.orderno, TOKEN: this.token, ACTION:"BFMFINAPP", REASON: this.lastcomment.lastreply }
+            this.apiserv.approveQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
+        if (this.activeItem === 'Vendor Finance') {
+            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
+            const data = { ORDERNO: this.orderno, ACTION:"VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            this.apiserv.approveQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
     }
     rejectOrder(){
-        //Orderno / Reason / Comment
-        this.apiserv.FailQAPOD(this.orderno, this.lastcomment.lastreply);
-        this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
-        this.closeDialog();
+
+        if (this.activeItem === 'BFM Finance') {
+            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
+            const data = { ORDERNO: this.orderno, TOKEN: this.token, ACTION: "BFMFINREJ" , REASON: this.lastcomment.lastreply }
+            this.apiserv.rejectQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
+        if (this.activeItem === 'Vendor Finance') {
+            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
+            const data = { ORDERNO: this.orderno, ACTION:"VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            this.apiserv.rejectQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
     }
 
     open(index: number): void {
@@ -130,6 +172,54 @@ export class MobileviewComponent {
 
     getFilteredMaterials(currentDescription: string): any[] {
         return this.mobileserv.materials.filter(m => m.description !== currentDescription);
+    }
+
+    startEditingPrice(index: number) {
+        this.editingPrice = index;
+    }
+
+    stopEditingPrice(index: number) {
+        // Stop editing only if the value is valid (optional)
+        this.editingPrice = null;
+    }
+
+    showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+        this.toastMessage = message;
+        this.toastType = type;
+        this.isToastVisible = true;
+  
+        setTimeout(() => {
+            this.isToastVisible = false;
+        }, 3000);
+    }
+    
+    onToastClosed() {
+        this.isToastVisible = false;
+    }
+
+    async save() {
+        const context = { CLASS: 'KWIK', METHOD: 'SAVE_KWIKMATERIALS' }
+        const data = { ORDERNO: this.orderno, MATUSED: JSON.stringify(this.mobileserv.materialsused) }
+
+        try {
+            const res = await axios.post('https://data.bidvestfm.co.za/ZRFC3/request?sys=prod', {context, data}, {
+                headers: {
+                    token: 'BK175mqMN0',
+                }
+            })
+            if (res.data.ERROR == '') {
+                this.showToast('Materials saved', 'success');
+            }else{
+                let errorMessage = "The following errors occurred:\n\n";
+                res.data.ERROR.forEach((error:any, index: number) => {
+                    errorMessage += `${index + 1}. ${error.CATEGORY}: ${error.MESSAGE}\n`;
+                });
+                this.showToast(errorMessage, 'error');
+            }
+        } catch (error) {
+            console.log(error)
+        }
+
     }
 }
   

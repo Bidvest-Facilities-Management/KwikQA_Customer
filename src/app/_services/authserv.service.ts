@@ -6,7 +6,10 @@ import { ActivatedRoute, Router, TitleStrategy } from '@angular/router';
 import { BehaviorSubject, map, take } from 'rxjs';
 import { ApiService } from './api.service';
 import { GlobalConstants } from '../globalconstants';
+
 export interface USER {
+    ROLE: any;
+    ADDEDROLEDATA: any;
     EMAIL: string;
     CELLNO: string;
     TOKEN: string;
@@ -152,7 +155,7 @@ export class AuthservService {
             },
             data: lclobj,
         };
-        let url = 'https://io.bidvestfm.co.za/BIDVESTFM_API_ZRFC3/request?sys=' + (this.apiserv.devprod.toUpperCase() == 'PROD' ? 'prod' : 'dev');
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + (this.apiserv.devprod.toUpperCase() == 'PROD' ? 'prod' : 'dev');
         let mypost = this.http.post(url, call2, httpOptions);
 
         return mypost.pipe(
@@ -193,7 +196,7 @@ export class AuthservService {
             TOKEN: '',
         };
         let tstr = this.apiserv.devprod;
-        let url = 'https://io.bidvestfm.co.za/BIDVESTFM_API_ZRFC3/request?sys=' + tstr;
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
         this.postGEN(lclobj, 'SENDRFCOTP', 'USER', url)
         .pipe(take(1))
         .subscribe((tokenin) => {
@@ -202,10 +205,7 @@ export class AuthservService {
             } else {
                 this.okloginBS.next(tokenin.RESULT.VERIFIED_BY_USER_GUID);
                 this.currentuser.TOKEN = tokenin.RESULT.VERIFIED_BY_USER_GUID;
-                localStorage.setItem(
-                    this.apiserv.environment,
-                    JSON.stringify(this.currentuser)
-                );
+                //localStorage.setItem(this.apiserv.environment,JSON.stringify(this.currentuser));
             }
         });
     }
@@ -219,7 +219,7 @@ export class AuthservService {
             TOKEN: this.currentuser.TOKEN,
         };
         let tstr = this.devprod == 'PROD' ? 'prod' : 'dev';
-        let url = 'https://io.bidvestfm.co.za/BIDVESTFM_API_ZRFC3/request?sys=' + tstr;
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
         this.postGEN(lclobj, 'VALIDRFCOTP', 'USER', url).subscribe((tokenin) => {
             let token = tokenin.RESULT;
             this.okloginBS.next('');
@@ -235,38 +235,31 @@ export class AuthservService {
     validateToken() {}
 
     validateLinkToken(token: string, role = 'PORTAL') {
-        this.postJSGEN(
-        { LINK: token, ROLE: role },
-        'CONFIRM_LINK',
-        'USER'
-        ).subscribe((reply) => {
-        if (reply.RESULT.indexOf('Error') > 2) {
-            this.apiserv.loadingBS.next(this.apiserv.loadingBS.value - 1);
-            this.router.navigate(['error']);
-        } else {
-            this.currentUserBS.next(JSON.parse(reply.RESULT));
-            let token = JSON.parse(reply.RESULT);
-            this.blankuser.EMAIL = token.EMAIL;
-            this.blankuser.TOKEN = token.TOKEN;
-            this.blankuser.CELLNO = token.CELL;
-            this.blankuser.NAME = token.NAME;
-            this.blankuser.USERNAME = token.USERNAME;
-            this.blankuser.PARTNER = token.VENDOR;
-            this.blankuser.PARTNERS = token.VENDORS;
-            this.blankuser.ROLELINKS = token.ROLELINKS
-            ? JSON.parse(token.ROLELINKS)
-            : [];
-            this.currentuser = { ...this.blankuser };
-            this.apiserv.currentuser.TOKEN = token.TOKEN;
-            this.currentUserBS.next(JSON.parse(JSON.stringify(this.blankuser)));
-            localStorage.setItem(
-            this.apiserv.environment,
-            JSON.stringify(this.currentUserBS.value)
-            );
+        this.postJSGEN({ LINK: token, ROLE: role },'CONFIRM_LINK','USER').subscribe((reply) => {
+            if (reply.RESULT.indexOf('Error') > 2) {
+                this.apiserv.loadingBS.next(this.apiserv.loadingBS.value - 1);
+                this.router.navigate(['error']);
+            } else {
+                this.currentUserBS.next(JSON.parse(reply.RESULT));
+                let token = JSON.parse(reply.RESULT);
+                this.blankuser.EMAIL = token.EMAIL;
+                this.blankuser.TOKEN = token.TOKEN;
+                this.blankuser.CELLNO = token.CELL;
+                this.blankuser.NAME = token.NAME;
+                this.blankuser.USERNAME = token.USERNAME;
+                this.blankuser.ROLE = token.ROLE;
+                this.blankuser.ADDEDROLEDATA = token.ADDEDROLEDATA;
+                this.blankuser.PARTNER = token.VENDOR;
+                this.blankuser.PARTNERS = token.VENDORS;
+                this.blankuser.ROLELINKS = token.ROLELINKS ? JSON.parse(token.ROLELINKS): [];
+                this.currentuser = { ...this.blankuser };
+                this.apiserv.currentuser.TOKEN = token.TOKEN;
+                this.currentUserBS.next(JSON.parse(JSON.stringify(this.blankuser)));
+                localStorage.setItem(this.apiserv.environment,JSON.stringify(this.currentUserBS.value));
 
-            this.loggedinBS.next(true);
-            this.router.navigate(['home']);
-        }
+                this.loggedinBS.next(true);
+                this.router.navigate(['home']);
+            }
         });
     }
 
@@ -283,42 +276,38 @@ export class AuthservService {
     validateLSToken() {
         let cu = localStorage.getItem(this.apiserv.environment || 'BaseApp');
         if (cu && JSON.parse(cu).TOKEN?.length > 5) {
-        this.postJSGEN(
-            { TOKEN: JSON.parse(cu).TOKEN, ROLE: this.role, APIKEY: this.apikey },
-            'VALIDATETOKEN',
-            'USER'
-        ).subscribe((reply) => {
+        this.postJSGEN({ TOKEN: JSON.parse(cu).TOKEN, ROLE: this.role, APIKEY: this.apikey },'VALIDATETOKEN','USER').subscribe((reply) => {
             if (reply.RESULT.indexOf('Error') > 2) {
-            if (this.token && this.token.length > 5) {
-                this.validateLinkToken(this.token, this.role);
+                if (this.token && this.token.length > 5) {
+                    this.validateLinkToken(this.token, this.role);
+                } else {
+                    this.logOut();
+                }
             } else {
-                this.logOut();
-            }
-            } else {
-            let token = JSON.parse(reply.RESULT);
-            this.blankuser.EMAIL = token.EMAIL;
-            this.blankuser.TOKEN = token.TOKEN;
-            this.blankuser.CELLNO = token.CELL;
-            this.blankuser.NAME = token.NAME;
-            this.blankuser.USERNAME = token.USERNAME;
-            this.blankuser.PARTNER = token.VENDOR;
-            this.blankuser.PARTNERS = token.VENDORS;
-            try {
-                this.blankuser.ROLELINKS = token.ROLELINKS
-                ? JSON.parse(token.ROLELINKS)
-                : [];
-            } catch (error) {
-                this.blankuser.ROLELINKS = [token.ROLELINKS];
-            }
-            this.currentuser = { ...this.blankuser };
-            this.apiserv.currentuser.TOKEN = token.TOKEN;
-            this.currentUserBS.next(JSON.parse(JSON.stringify(this.blankuser)));
-            localStorage.setItem(
-                this.apiserv.environment,
-                JSON.stringify(this.currentUserBS.value)
-            );
-            this.loggedinBS.next(true);
-            this.router.navigate(['home']);
+                let token = JSON.parse(reply.RESULT);
+                this.blankuser.EMAIL = token.EMAIL;
+                this.blankuser.TOKEN = token.TOKEN;
+                this.blankuser.CELLNO = token.CELL;
+                this.blankuser.NAME = token.NAME;
+                this.blankuser.USERNAME = token.USERNAME;
+                this.blankuser.ROLE = token.ROLE;
+                this.blankuser.ADDEDROLEDATA = token.ADDEDROLEDATA;
+                this.blankuser.PARTNER = token.VENDOR;
+                this.blankuser.PARTNERS = token.VENDORS;
+
+                try {
+                    this.blankuser.ROLELINKS = token.ROLELINKS ? JSON.parse(token.ROLELINKS): [];
+                } catch (error) {
+                    this.blankuser.ROLELINKS = [token.ROLELINKS];
+                }
+
+                this.currentuser = { ...this.blankuser };
+                this.apiserv.currentuser.TOKEN = token.TOKEN;
+                this.currentUserBS.next(JSON.parse(JSON.stringify(this.blankuser)));
+                localStorage.setItem(this.apiserv.environment, JSON.stringify(this.currentUserBS.value)
+                );
+                this.loggedinBS.next(true);
+                this.router.navigate(['home']);
             }
         });
         } // No Token
@@ -329,14 +318,16 @@ export class AuthservService {
 
     getBlankuser() {
         return {
-        EMAIL: '',
-        CELLNO: '',
-        PARTNER: '',
-        NAME: '',
-        TOKEN: '',
-        USERNAME: '',
-        PARTNERS: '',
-        ROLELINKS: [{ ROLE: '', ROLELINKS: '' }],
+            EMAIL: '',
+            CELLNO: '',
+            PARTNER: '',
+            NAME: '',
+            TOKEN: '',
+            USERNAME: '',
+            PARTNERS: '',
+            ROLE: '',
+            ADDEDROLEDATA: '',
+            ROLELINKS: [{ ROLE: '', ROLELINKS: '' }],
         };
     }
 }

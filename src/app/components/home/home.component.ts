@@ -44,28 +44,10 @@ export class HomeComponent implements OnInit {
 
     ngOnInit(): void {
 
-        this.mobileserv.configValues.forEach((item: any, index: any) => {
-            const roleLinksString = this.authserv.blankuser.ROLELINKS.join(' ');
-            if (roleLinksString.includes(item.NODEKEY.split('+')[0])) {
-                this.menulist.push( {
-                    name: item.VALUE,
-                    icon: 'person',
-                    link: 200 + (index * 100),
-                    status: item.EXTRA
-                })
-            }
-        })
-    }
-
-    doConfig(configSection:any = {}){
-        console.log('configSection',configSection)
     }
 
     changePanel(panel:any){
-        this.panel = 0;
-        this.thetable = this.apiserv.tablename;
-        this.panel = panel;
-        this.apiserv.getConfirms(30, panel);
-        
+        console.log(panel)
+        this.panel = panel
     }
 }

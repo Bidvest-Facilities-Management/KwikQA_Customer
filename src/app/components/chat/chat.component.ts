@@ -52,7 +52,7 @@ export class ChatComponent implements AfterViewInit {
         // this.chats = data;
         }))},500
     );  
-
+    
     }
     ngOnDestroy(): void {
         this.subs.forEach(sub => sub.unsubscribe());
@@ -89,7 +89,6 @@ export class ChatComponent implements AfterViewInit {
         let tstr = this.dataserv.devprod.toUpperCase() == 'PROD' ? 'prod' : 'prod';
         let url = 'https://io.bidvestfm.co.za/BIDVESTFM_API_ZRFC3/request?sys=' + tstr;
         this.dataserv.postGEN({ ORDERNO: reference, GET_PARTNER: 'A' }, "GET_CHAT", "KWIK", url).subscribe((data) => {
-            console.log(data)
         });
         this.dataserv.postGEN({ REFERENCE: reference, APIKEY:this.apikey, COMMENT_AREA: this.section, url }, "GET_CHAT", "COMMENTS").subscribe((data) => {
         let temp = JSON.parse(data.RESULT);
