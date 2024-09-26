@@ -45,12 +45,12 @@ export class ApiService {
     }
     /*******postJSGen** Return non-array***************************************************** */
     postGEN(lclobj: any, methodname: string, classname: string = "KWIK", dest = this.devprod) {
-        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + dest
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + 'prod'
         const httpOptions = {
-        headers: new HttpHeaders({
-            'Content-Type': 'application/json',
-            token: 'BK175mqMN0',
-        })
+            headers: new HttpHeaders({
+                'Content-Type': 'application/json',
+                token: 'BK175mqMN0',
+            })
         };
         const call2 = {
             context: {
@@ -64,10 +64,10 @@ export class ApiService {
         let mypost = this.http.post(url,call2, httpOptions);
 
         return mypost.pipe(
-        map(data => {
-            let represult = (data && data['d' as keyof typeof data] && data['d' as keyof typeof data]['exResult' as keyof typeof data]) ?
-            JSON.parse(JSON.parse(data['d' as keyof typeof data]['exResult' as keyof typeof data].toString().replace(/[^\x00-\x7F]/g, ""))) : data
-            return represult
+            map(data => {
+                let represult = (data && data['d' as keyof typeof data] && data['d' as keyof typeof data]['exResult' as keyof typeof data]) ?
+                JSON.parse(JSON.parse(data['d' as keyof typeof data]['exResult' as keyof typeof data].toString().replace(/[^\x00-\x7F]/g, ""))) : data
+                return represult
 
         }))
 

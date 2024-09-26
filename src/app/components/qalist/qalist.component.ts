@@ -45,7 +45,7 @@ export class QalistComponent {
                 let tempreply = [...reply]
                 tempreply.forEach((ele: any) => {
                     let element = JSON.parse(JSON.stringify(ele))
-                    element['ORDERNO'] = element['ORDERNO']?.replaceAll(/^0+/g, "") || element['AUFNR']?.replaceAll(/^0+/g, "")
+                    element['ORDERNO'] = element['ORDERNO'] || element['AUFNR']
                     element['tag'] = Object.values(element).join('-');
                     element['WORKCENTRE'] = element?.['WORKCENTRE'] || element['RESOURCE']
                     element['SHORTTEXT'] = element?.['SHORTTEXT'] || element['QMTXT']
@@ -69,7 +69,7 @@ export class QalistComponent {
 
     exportexcel(): void {
         /* pass the table id */
-        let element = document.getElementById('doclist');
+        let element = document.getElementById('masterlist');
         const ws: XLSX.WorkSheet = XLSX.utils.table_to_sheet(element, { raw: true });
 
         /* generate workbook and add the worksheet */
