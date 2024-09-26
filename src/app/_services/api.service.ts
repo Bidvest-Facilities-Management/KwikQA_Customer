@@ -45,7 +45,7 @@ export class ApiService {
     }
     /*******postJSGen** Return non-array***************************************************** */
     postGEN(lclobj: any, methodname: string, classname: string = "KWIK", dest = this.devprod) {
-        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + 'prod'
+        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + dest
         const httpOptions = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',

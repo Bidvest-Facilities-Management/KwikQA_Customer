@@ -36,6 +36,8 @@ export class AuthservService {
     public currentUser$ = this.currentUserBS.asObservable();
     private loggedinBS = new BehaviorSubject<boolean>(false);
     public loggedin$ = this.loggedinBS.asObservable();
+    public loading = new BehaviorSubject<boolean>(false);
+    public loading$ = this.loading.asObservable();
 
     constructor(
         private http: HttpClient,
@@ -197,15 +199,15 @@ export class AuthservService {
         };
         let tstr = this.apiserv.devprod;
         let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
-        this.postGEN(lclobj, 'SENDRFCOTP', 'USER', url)
-        .pipe(take(1))
-        .subscribe((tokenin) => {
+        this.loading.next(true)
+        this.postGEN(lclobj, 'SENDRFCOTP', 'USER', url).pipe(take(1)).subscribe((tokenin) => {
             if (tokenin.RESULT.VERIFIED_BY_USER_GUID == 'ERROR') {
                 this.okloginBS.next('failed');
+                this.loading.next(false)
             } else {
                 this.okloginBS.next(tokenin.RESULT.VERIFIED_BY_USER_GUID);
                 this.currentuser.TOKEN = tokenin.RESULT.VERIFIED_BY_USER_GUID;
-                //localStorage.setItem(this.apiserv.environment,JSON.stringify(this.currentuser));
+                this.loading.next(false)
             }
         });
     }
@@ -220,15 +222,18 @@ export class AuthservService {
         };
         let tstr = this.devprod == 'PROD' ? 'prod' : 'dev';
         let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
+        this.loading.next(true)
         this.postGEN(lclobj, 'VALIDRFCOTP', 'USER', url).subscribe((tokenin) => {
             let token = tokenin.RESULT;
             this.okloginBS.next('');
             if (token.VERIFIED_BY_USER_GUID == 'ERROR') {
                 this.okloginBS.next('failed');
+                this.loading.next(false)
             } else {
                 this.currentuser.TOKEN = tokenin.RESULT.VERIFIED_BY_USER_GUID;
                 localStorage.setItem(this.apiserv.environment,JSON.stringify(this.currentuser));
                 this.validateLSToken();
+                this.loading.next(false)
             }
         });
     }
