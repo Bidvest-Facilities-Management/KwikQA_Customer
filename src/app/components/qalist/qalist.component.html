@@ -10,7 +10,7 @@
         </div>
     </ng-container>
     <ng-container *ngIf="loading == true">    
-        <div class="absolute h-full inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+        <div class="absolute h-screen inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
             <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
         </div>
     </ng-container>
@@ -35,13 +35,15 @@
                         </tr>
                     </thead>
                     <tbody class="text-gray-700">
-                        <tr  *ngFor="let orderview of searchlistnew  | searchpipe: [searchbox, 'tag']" class="border-b hover:bg-gray-100 transition duration-300 ease-in-out">
+                        <tr *ngFor="let orderview of searchlistnew  | searchpipe: [searchbox, 'tag']" class="border-b hover:bg-gray-100 transition duration-300 ease-in-out">
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.ORDERNO}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.FLOCTXT}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.SHORTTEXT}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.WORKCENTRE}}</td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.HHUSER}}</td>
-                            <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer"><span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">{{orderview.ORDERSTATUS}}</span></td>
+                            <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">
+                                <span class="bg-green-100 text-green-800 text-xs font-semibold px-2 py-1 rounded">{{orderview.ORDERSTATUS}}</span>
+                            </td>
                             <td (dblclick)="showmobile(orderview)" class="py-3 px-4 text-sm cursor-pointer">{{orderview.SLADATE}}</td>
                         </tr>
                     </tbody>

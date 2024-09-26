@@ -68,7 +68,7 @@ export class MobilityService {
                 "material": item.MATNR,
                 "quantity": "",
                 "description": item.MAKTX,
-                "price": "",
+                "price": item.NETWR || "",
                 "noprice": "",
             }));
         });
@@ -101,10 +101,10 @@ export class MobilityService {
     /***************************************************** */
     getMaterialsList() {
         this.apiserv.postGEN({ GROUPING: 'ZKWIKMOBILE' }, "GET_MATERIALS", "KWIK", this.devprod).subscribe(reply => {
-        this.apiserv.loadingBS.next(this.apiserv.loadingBS.value - 1);
-        if (!reply || reply.RESULT.length == 0) {
-            return
-        }
+            this.apiserv.loadingBS.next(this.apiserv.loadingBS.value - 1);
+            if (!reply || reply.RESULT.length == 0) {
+                return
+            }
             this.materialsList = reply.RESULT;
         })
     }

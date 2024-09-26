@@ -73,8 +73,6 @@ export class MobileviewComponent {
         });
     }
 
-    
-
     hasAnyRole(roles: string[]): boolean {
         const userRoles = this.authserv.blankuser.ROLELINKS.join(' ');
         return roles.some(role => userRoles.includes(role));
@@ -166,6 +164,7 @@ export class MobileviewComponent {
         const selectedMaterial = this.mobileserv.materials.find(m => m.description === material.description);
         if (selectedMaterial) {
             material.material = this.removeLeadingZeros(selectedMaterial.material);
+            material.price = selectedMaterial.price
             // You might want to update other fields like price if needed
         }
     }
