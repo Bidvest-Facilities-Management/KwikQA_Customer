@@ -47,7 +47,7 @@ export class LoginComponent {
                         this.message = 'Invalid Email or cell Number';
                         setTimeout(() => {
                         this.message = '';
-                        }, 5000);
+                        }, 3000);
                     } else {
                         this.norequest = false;
                     }

@@ -60,26 +60,25 @@ export class ChatComponent implements AfterViewInit {
 
     createComment(  ) {
         if (this.replytext =='') {
-        this.getComments();
-        return null;
+            this.getComments();
+            return null;
         }
         this.lastreply.lastreply = this.replytext;
-    let reference = this.orderno == null ? '' : ('00000' + this.orderno).slice(-12);
+        let reference = this.orderno == null ? '' : ('00000' + this.orderno).slice(-12);
         let lclobj = {
-        id: 0, 
-        COMMENT_TEXT: this.dataserv.xtdbtoa(this.replytext), 
-        APIKEY: this.apikey, REFERENCE: reference, 
-        COMMENT_AREA: this.section,  
-        COMMENTBY: this.commentby, 
-        STATUS:'A', 
-        PARENT_ID: 0
+            id: 0, 
+            COMMENT_TEXT: this.dataserv.xtdbtoa(this.replytext), 
+            APIKEY: this.apikey, REFERENCE: reference, 
+            COMMENT_AREA: this.section,  
+            COMMENTBY: this.commentby, 
+            STATUS:'A', 
+            PARENT_ID: 0
         }
         this.dataserv.postGEN({ ORDERNO: reference, PUT_PARTNER: 'A' }, "PUT_CHAT", "KWIK").subscribe((data) => {
-        this.getComments();
+            this.getComments();
         });
         this.dataserv.postGEN(lclobj, "PUT_COMMENT", "COMMENTS").subscribe((data) => {
-        let temp = data.RESULT;
-
+            let temp = data.RESULT;
         })
         this.replytext = '';
         return null;
@@ -91,15 +90,15 @@ export class ChatComponent implements AfterViewInit {
         this.dataserv.postGEN({ ORDERNO: reference, GET_PARTNER: 'A' }, "GET_CHAT", "KWIK", url).subscribe((data) => {
         });
         this.dataserv.postGEN({ REFERENCE: reference, APIKEY:this.apikey, COMMENT_AREA: this.section, url }, "GET_CHAT", "COMMENTS").subscribe((data) => {
-        let temp = JSON.parse(data.RESULT);
-        let out = temp.map((item: { COMMENT_TEXT: string; REFERENCE: any; COMMENT_AREA: any; COMMENTBY: any; STATUS: any; DATEOF: string; TIMEOF: string; }) => {
-            return   {
-                id: 0,MESSAGE: this.dataserv.xtdatob(item.COMMENT_TEXT), APIKEY: this.apikey, ORDERNO:item.REFERENCE, SECTION:item.COMMENT_AREA,
-                USER: item.COMMENTBY, STATUS:item.STATUS, TIMESTAMP: item.DATEOF + ' ' + item.TIMEOF
-            }
-        })
-        this.chats = out;
-        this.scrollToBottom();
+            let temp = JSON.parse(data.RESULT);
+            let out = temp.map((item: { COMMENT_TEXT: string; REFERENCE: any; COMMENT_AREA: any; COMMENTBY: any; STATUS: any; DATEOF: string; TIMEOF: string; }) => {
+                return   {
+                    id: 0,MESSAGE: this.dataserv.xtdatob(item.COMMENT_TEXT), APIKEY: this.apikey, ORDERNO:item.REFERENCE, SECTION:item.COMMENT_AREA,
+                    USER: item.COMMENTBY, STATUS:item.STATUS, TIMESTAMP: item.DATEOF + ' ' + item.TIMEOF
+                }
+            })
+            this.chats = out;
+            this.scrollToBottom();
         })
     
     }
