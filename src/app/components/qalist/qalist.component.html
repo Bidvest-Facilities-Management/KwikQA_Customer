@@ -1,4 +1,4 @@
-<div class="ml-10 bg-gray-50 dark:bg-gray-900">
+<div class="bg-gray-50 dark:bg-gray-900">
     <ng-container *ngIf="apiserv.loadingBS.value > 0">
         <div class="absolute h-full inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
             <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
@@ -15,7 +15,7 @@
         </div>
     </ng-container>
     <ng-container *ngIf="searchlist.length > 0">
-        <div class="container ">
+        <div class="container max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="overflow-x-auto mt-4">
                 <div class="flex justify-around mb-3">
                     <input type="text" class="border border-gray-300 rounded-lg p-2 w-96" placeholder="Search" [(ngModel)]="searchbox" />
@@ -25,13 +25,34 @@
                 <table class="min-w-full bg-white" id="masterlist">
                     <thead>
                         <tr class="bg-gray-800 text-white">
-                            <th (dblclick)="sortBy('ORDERNO')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Order Number</th>
-                            <th (dblclick)="sortBy('FLOCTXT')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Site Name</th>
-                            <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Short Text</th>
-                            <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Vendor</th>
-                            <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Vendor Name</th>
-                            <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">Order Status</th>
-                            <th class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider">SLA Date</th>
+                            <th (click)="sortBy('ORDERNO')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                Order Number
+                                <span *ngIf="sortorder === 'ORDERNO'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
+                            <th (click)="sortBy('FLOCTXT')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                Site Name
+                                <span *ngIf="sortorder === 'FLOCTXT'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
+                            <th (click)="sortBy('SHORTTEXT')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                Short Text
+                                <span *ngIf="sortorder === 'SHORTTEXT'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
+                            <th (click)="sortBy('WORKCENTRE')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                Vendor
+                                <span *ngIf="sortorder === 'WORKCENTRE'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
+                            <th (click)="sortBy('HHUSER')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                Vendor Name
+                                <span *ngIf="sortorder === 'HHUSER'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
+                            <th (click)="sortBy('ORDERSTATUS')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                Order Status
+                                <span *ngIf="sortorder === 'ORDERSTATUS'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
+                            <th (click)="sortBy('SLADATE')" class="w-1/7 py-3 px-4 text-left text-sm font-semibold uppercase tracking-wider cursor-pointer">
+                                SLA Date
+                                <span *ngIf="sortorder === 'SLADATE'">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                            </th>
                         </tr>
                     </thead>
                     <tbody class="text-gray-700">
@@ -62,4 +83,5 @@
         </div>
     </ng-container>
 
+    <app-bottom-sheet [orderno]="currentorderno"></app-bottom-sheet>
 </div>

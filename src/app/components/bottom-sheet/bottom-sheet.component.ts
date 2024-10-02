@@ -1,9 +1,8 @@
-import { Component, EventEmitter, ElementRef, ViewChild } from '@angular/core';
+import { Component, EventEmitter, ElementRef, ViewChild, Input, OnInit } from '@angular/core';
 import { ChatComponent } from '../../components/chat/chat.component';
 import { FormsModule, ReactiveFormsModule  } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
 import { MobilityService } from '../../_services/mobility.service';
-import { Subscription } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AuthservService } from '../../_services/authserv.service';
@@ -11,25 +10,24 @@ import { LightboxModule, Lightbox } from 'ngx-lightbox';
 import { VariablesStateService } from '../../_services/variables-state.service';
 import { ToastComponent } from '../toast/toast.component';
 import axios from 'axios';
+import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-mobileview',
+  selector: 'app-bottom-sheet',
   standalone: true,
   imports: [ChatComponent, CommonModule, LightboxModule, FormsModule, ReactiveFormsModule, ToastComponent],
-  templateUrl: './mobileview.component.html',
-  styleUrl: './mobileview.component.css',
+  templateUrl: './bottom-sheet.component.html',
+  styleUrl: './bottom-sheet.component.css'
 })
-export class MobileviewComponent {
-
-    token = this.authserv.currentuser.TOKEN
-    filter="HCOM" 
+export class BottomSheetComponent implements OnInit {
+    
+    @Input() orderno: string = ''
+    isBottomSheetOpen: boolean = false
     loadingBS = 0
-    subs: Subscription[] = [];
-    lastcomment = {lastreply: '' };
-    orderno = '000411935489'
     canAddMaterial: boolean = false;
     filteredMaterials: any [] = []
     activeItem: string = '';
+    subs: Subscription[] = [];
     editingPrice: number | null = null;
     loading: boolean = false
     newMaterial: any = {
@@ -38,40 +36,45 @@ export class MobileviewComponent {
         quantity: 0,
         price: null
     };
-    varSubscription: Subscription;
     @ViewChild('content', { static: false }) content!: ElementRef;
 
     toastMessage: string = '';
     toastType: 'success' | 'error' | 'info' = 'info';
     isToastVisible: boolean = false;
 
+    token = this.authserv.currentuser.TOKEN
+    lastcomment = {lastreply: '' };
+
     constructor(
-        private apiserv:ApiService,
         private authserv: AuthservService,
         public mobileserv:MobilityService,
-        private route: ActivatedRoute,
+        private apiserv:ApiService,
         private router:Router,
         private lightbox: Lightbox,
         private varStateService: VariablesStateService
-    ) { }
-  
-    
+    ){}
+
     ngOnInit(): void {
-        this.route.params.subscribe((params: Params) => this.orderno = params['orderno']);
-        this.mobileserv.getExistingView(this.orderno);
+
+        if (this.isBottomSheetOpen) {
+            console.log(this.orderno)
+        }
         this.subs.push(this.apiserv.loadingBS.subscribe(item => {
                 this.loadingBS = item;
             })
         );
-        
-        this.varSubscription = this.varStateService.currentActiveMenuItem.subscribe(menuItem => {
-            this.activeItem = menuItem
-            this.canAddMaterial = menuItem !== 'Confirmations'
+    
+        this.varStateService.bottomSheetOpen.subscribe(value => {
+            if (value && this.orderno) {
+                console.log(this.orderno)
+                this.mobileserv.getExistingView(this.orderno);
+            }
+            this.isBottomSheetOpen = value
         });
-
-        this.varSubscription = this.varStateService.loading.subscribe(value => {
-            this.loading = value
-        });
+    }
+    
+    closeBottomSheet() {
+        this.varStateService.changeBottomSheet(false)
     }
 
     hasAnyRole(roles: string[]): boolean {
@@ -79,9 +82,6 @@ export class MobileviewComponent {
         return roles.some(role => userRoles.includes(role));
     }
 
-    ngOnDestroy(): void {
-        this.subs.forEach(sub => sub.unsubscribe());
-    };
 
     closeDialog(){
         this.router.navigate(['/home']);
@@ -221,5 +221,5 @@ export class MobileviewComponent {
         }
 
     }
+
 }
-  

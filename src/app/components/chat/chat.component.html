@@ -1,13 +1,24 @@
-
 <div class="bg-white shadow-md rounded-lg p-6 mb-8">
     <h2 class="text-xl font-semibold mb-4 text-gray-700">BFM-QA Comments</h2>
+
+    <!-- Chat container -->
     <div class="h-96 overflow-y-auto mb-4 p-4 bg-gray-100 rounded">
-        <!-- Example chat messages -->
-        <div *ngFor="let chat of chats" class="mb-2">
-            <p class="text-sm font-semibold">{{chat.STATUS == 'A'?'Agent: ':'User: '}}{{chat.USER + '  ' + chat.TIMESTAMP}}</p>
-            <p [ngClass]="chat.STATUS == 'A'? 'bg-blue-100': 'bg-gray-100'" class="text-sm p-2 rounded">{{chat.MESSAGE}}</p>
+        <!-- Loop through chats -->
+        <div *ngFor="let chat of chats" class="mb-2 flex" [ngClass]="chat.STATUS == 'A' ? 'justify-end' : 'justify-start'">
+            
+            <!-- Message container -->
+            <div class="max-w-xs">
+                <p class="text-sm font-semibold">
+                    {{chat.STATUS == 'A' ? 'Agent: ' : 'User: '}}{{chat.USER + '  ' + chat.TIMESTAMP}}
+                </p>
+                <p [ngClass]="chat.STATUS == 'A' ? 'bg-blue-100' : 'bg-gray-100'" class="text-sm p-2 rounded">
+                    {{chat.MESSAGE}}
+                </p>
+            </div>
         </div>
     </div>
+
+    <!-- Input box for reply -->
     <div class="flex" *ngIf="viewer != 'X'">
         <textarea 
             #chatInput
@@ -17,7 +28,6 @@
             placeholder="Type your message..."
             rows="1"
         ></textarea>
-        <!-- <input [(ngModel)]="replytext" type="text" placeholder="Type your message..." class="flex-grow p-2 border rounded-l focus:outline-none focus:ring-2 focus:ring-blue-500"> -->
         <button (click)="createComment()" class="px-4 py-2 h-12 bg-blue-500 text-white rounded-r hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
             {{replytext ==''?'Refresh':'Send'}}
         </button>

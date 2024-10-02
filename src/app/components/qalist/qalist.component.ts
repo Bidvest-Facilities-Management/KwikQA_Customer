@@ -9,11 +9,12 @@ import { MobileviewComponent } from '../mobileview/mobileview.component';
 import { AuthservService } from '../../_services/authserv.service';
 import { VariablesStateService } from '../../_services/variables-state.service';
 import { Router } from '@angular/router';
+import { BottomSheetComponent } from '../bottom-sheet/bottom-sheet.component';
 
 @Component({
   selector: 'app-qalist',
   standalone: true,
-  imports: [FormsModule, CommonModule, SearchpipePipe, MobileviewComponent],
+  imports: [FormsModule, CommonModule, SearchpipePipe, MobileviewComponent, BottomSheetComponent],
   templateUrl: './qalist.component.html',
   styleUrl: './qalist.component.css'
 })
@@ -22,14 +23,16 @@ export class QalistComponent {
     subscriptions: Subscription[] = [];
     searchlist:any = 'empty';
     searchlistnew :any[] = [];
+    sortDirection: 'asc' | 'desc' = 'asc';
     searchlistbase :any[] = [];
     statelevel = 0;
     sortorder = 'QMNUM';
     fileName = 'Notifs-list.xlsx';
     searchbox = '';
-    currentorderno = '000407091452';
+    currentorderno = '';
     loading = false
     varSubscription: Subscription;
+    isBottomSheetOpen = false;
     
     constructor(
         public apiserv:ApiService, 
@@ -63,6 +66,7 @@ export class QalistComponent {
     }
 
     showmobile(orderview: any = {}){
+        //this.varStateService.changeBottomSheet(true)
         this.currentorderno = ('000000000000' + orderview.ORDERNO).slice(-12);
         this.router.navigate(['pod', this.currentorderno]);
     }
@@ -81,30 +85,23 @@ export class QalistComponent {
 
     }
     
-    sortBy(attribute= 'ORDERNO'){
-        if ( this.sortorder != attribute ) {
-            this.searchlistnew.sort((a, b)=> {
-                if (a[attribute] < b[attribute]) {
-                    return -1;
-                }
-                if (a[attribute] > b[attribute]) {
-                    return 1;
-                }
-                return 0;
-            })
-            this.sortorder = attribute;
+    sortBy(attribute: string) {
+        if (this.sortorder === attribute) {
+            this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
         } else {
-            this.searchlistnew.sort((a, b)=> {
-                if (a[attribute] > b[attribute]) {
-                    return -1;
-                }
-                if (a[attribute] < b[attribute]) {
-                    return 1;
-                }
-                return 0;
-            })
-            this.sortorder = '';
+            this.sortDirection = 'asc';
         }
+
+        this.searchlistnew.sort((a, b) => {
+            const valueA = a[attribute];
+            const valueB = b[attribute];
+
+            if (valueA < valueB) return this.sortDirection === 'asc' ? -1 : 1;
+            if (valueA > valueB) return this.sortDirection === 'asc' ? 1 : -1;
+            return 0;
+        });
+
+        this.sortorder = attribute;
     }
 
 } 

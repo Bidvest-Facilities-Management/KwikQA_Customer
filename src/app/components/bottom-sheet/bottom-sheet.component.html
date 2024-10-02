@@ -1,0 +1,170 @@
+<!-- Bottom sheet overlay -->
+  <div *ngIf="isBottomSheetOpen" (click)="closeBottomSheet()" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
+
+  <!-- Bottom sheet content -->
+  <div *ngIf="isBottomSheetOpen" class="fixed bottom-0 left-0 right-0 z-50 max-h-full">
+        <div class="bg-white rounded-t-lg p-6 shadow-lg max-h-[95vh] overflow-y-auto transform transition-transform ease-out duration-300" [ngClass]="{'translate-y-0': isBottomSheetOpen, 'translate-y-full': !isBottomSheetOpen}">
+           <!-- Floating Close Button -->
+            <button class="fixed no-print top-6 right-6 h-16 w-16 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition duration-300 ease-in-out" (click)="closeBottomSheet()">
+                ✕
+            </button>
+
+            <div class="container mx-auto px-2 py-4">
+                <h1 class="text-3xl font-bold mb-8 text-center text-gray-800">Proof of Delivery - Quality Assurance</h1>
+        
+                <!-- Loading indicator -->
+                <div *ngIf="loading" class="absolute h-full inset-0 flex items-center justify-center bg-white bg-opacity-75 z-50">
+                    <div class="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-600"></div>
+                </div>
+        
+                <!-- Empty state -->
+                <!-- <div *ngIf="!mobileserv.loadedview" class="text-center py-10">
+                    <p class="text-xl text-gray-600">No data available. Please fetch data to proceed.</p>
+                </div>
+                 -->
+                <div *ngIf="!loading" class="grid grid-cols-1 lg:grid-cols-3 gap-8" #content>
+                    <div class="lg:col-span-2" id="downloadPDF">
+                        <!-- Main Fields -->
+                        <div class="bg-white shadow-md rounded-lg p-2 mb-4">
+                            <h2 class="text-xl font-semibold mb-2 text-gray-700">Main Information</h2>
+                            <div class="grid grid-cols-2 gap-1">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Site Name</p>
+                                    <p class="-mt-1 text-base font-semibold text-gray-800">{{mobileserv.sitedetail.location}}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Order No</p>
+                                    <p class="-mt-1 text-base font-semibold text-gray-800">{{orderno}}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Case ID</p>
+                                    <p class="-mt-1 text-base font-semibold text-gray-800">{{mobileserv.sitedetail.caseid}}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Action</p>
+                                    <p class="-mt-1 text-base font-semibold text-gray-800">{{mobileserv.loadedview.CONFSUBTYPE }}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Order Type</p>
+                                    <p class="-mt-1 text-base font-semibold text-gray-800">{{mobileserv.loadedview['CONFTYPE']}}</p>
+                                </div>
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500">Activity Code</p>
+                                    <p class="-mt-1 text-base font-semibold text-gray-800">{{mobileserv.loadedview['ACTIVITY_TYPE']}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Billing Fields -->
+                        <div class="bg-white shadow-md rounded-lg p-2 mb-4">
+                            <h2 class="text-xl font-semibold mb-2 text-gray-700">Billing Information</h2>
+                            <div class="grid grid-cols-2 gap-1">
+                                <ng-container *ngFor="let item of mobileserv.filteredActivityCodes">
+                                    <div *ngIf="item.FIELDNAME !== 'MATUSED'">
+                                        <p class="text-sm font-medium text-gray-500">{{item.FIELDLABEL}}</p>
+                                        <p class="-mt-1 text-base font-semibold text-gray-800">{{ mobileserv.loadedview[item.FIELDNAME] }}</p>
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </div>
+                        
+                        <!-- Materials Table -->
+                        <div class="bg-white shadow-md rounded-lg p-2 mb-4 overflow-x-auto">
+                            <h2 class="text-xl font-semibold mb-2 text-gray-700">Materials Used</h2>
+                            <table *ngIf="mobileserv.materialsused.length != 0" class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
+                                        <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                        <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
+                                        <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
+                                        <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" ></th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <tr *ngFor="let material of mobileserv.materialsused; let i = index">
+                                        <td class="px-1.5 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            {{ removeLeadingZeros(material.material) }}
+                                        </td>
+                                        <td class="px-1.5 whitespace-nowrap text-sm text-gray-500">
+                                            <ng-container *ngIf="canAddMaterial  && material.description === '' ; else viewOnlyDescription">
+                                                <select [(ngModel)]="material.description" (ngModelChange)="onDescriptionChange(material, i)" class="border rounded px-2 py-1 w-full">
+                                                    <option value="" selected disabled>Select material</option>
+                                                    <option *ngIf="material.description" [ngValue]="material.description" >{{ material.description }}</option>
+                                                    <option *ngFor="let option of getFilteredMaterials(material.description)" [ngValue]="option.description">
+                                                        {{option.description}}
+                                                    </option>
+                                                </select>
+                                            </ng-container>
+                                            <ng-template #viewOnlyDescription>{{ material.description }}</ng-template>
+                                        </td>
+                                        <td class="px-1.5 whitespace-nowrap text-sm text-gray-500">
+                                            <ng-container *ngIf="canAddMaterial; else viewOnlyQuantity">
+                                                <input type="number" [(ngModel)]="material.quantity" class="border rounded px-2 py-1 w-full">
+                                            </ng-container>
+                                            <ng-template #viewOnlyQuantity>{{ material.quantity }}</ng-template>
+                                        </td>
+                                        <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
+                                            {{ material.sellprice}}
+                                        </td>
+                                        <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
+                                            <ng-container *ngIf="canAddMaterial && (material.price == 0 || material.price == null || material.price === '' || editingPrice === i); else viewOnlyPrice">
+                                                <input type="number" [(ngModel)]="material.price" (focus)="startEditingPrice(i)" (blur)="stopEditingPrice(i)" class="border rounded px-2 py-1 w-full">
+                                            </ng-container>
+                                            <ng-template #viewOnlyPrice>{{ material.price}}</ng-template>
+                                        </td>
+                                        <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500" >
+                                            <button (click)="removeMaterial(i)" class="text-red-500 hover:text-red-700">Remove</button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <p class="text-sm font-medium text-gray-500" *ngIf="mobileserv.materialsused.length == 0">No materials used</p>
+                            <div class="flex justify-between px-2" *ngIf="canAddMaterial">
+                                <button (click)="addMaterial()" class="mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold text-sm py-1 px-2 rounded no-print">
+                                    Add Material
+                                </button>
+                                <button (click)="save()" class="mt-2 bg-green-500 hover:bg-green-700 text-white font-bold text-sm py-1 px-2 rounded no-print">
+                                    Save
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Photo Section -->
+                        <div class="bg-white shadow-md rounded-lg p-2 mb-4">
+                            <h2 class="text-xl font-semibold mb-2 text-gray-700">Photos/Images</h2>
+                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <div *ngFor="let photo of mobileserv.photosloaded,let i = index" class="relative">
+                                    <img [src]="photo?.image" (click)="open(i)" alt="{{ photo?.name }}" class="w-full h-auto rounded-lg shadow-md">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Approval/Rejection Buttons -->
+                        <div *ngIf="canAddMaterial" class="bg-white shadow-md rounded-lg p-6 mb-8 no-print">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-700">Quality Assurance Decision</h2>
+                            <div class="flex space-x-4">
+                                <button (click)="approveOrder()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                                    Approve
+                                </button>
+                                <button [disabled]="lastcomment.lastreply.length < 1" (click)="rejectOrder()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                                    Reject
+                                </button>
+                                <button (click)="exportToPDF()" class="px-4 py-2 self-end bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                                    PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Section -->
+                    <div *ngIf="mobileserv.loadedview['ORDERNO'] == orderno"  class="lg:col-span-1 no-print">
+                        <app-chat [apikey]="'KWIKPORTAL'" [orderno]="('00000000' + mobileserv.loadedview['ORDERNO']).slice(-12)" [height]="200" [section]="'BFM-QA'" [commentby]="token"  [lastreply]="lastcomment"></app-chat>
+                    </div>
+                </div>
+            </div>
+
+            <app-toast [message]="toastMessage" [type]="toastType" [isVisible]="isToastVisible" (closed)="onToastClosed()"></app-toast>
+        </div>
+  </div>

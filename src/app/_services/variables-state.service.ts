@@ -7,9 +7,11 @@ import { BehaviorSubject } from 'rxjs';
 export class VariablesStateService {
 
     private activeMenuItemSource = new BehaviorSubject<string>('');
-    private isLoading = new BehaviorSubject<boolean>(false);
     currentActiveMenuItem = this.activeMenuItemSource.asObservable();
+    private isLoading = new BehaviorSubject<boolean>(false);
     loading = this.isLoading.asObservable();
+    private isBottomSheetOpen = new BehaviorSubject<boolean>(false);
+    bottomSheetOpen = this.isBottomSheetOpen.asObservable();
 
     constructor() { }
     
@@ -19,5 +21,9 @@ export class VariablesStateService {
 
     changeLoading(value: boolean) {
         this.isLoading.next(value);
+    }
+
+    changeBottomSheet(value:boolean) {
+        this.isBottomSheetOpen.next(value)
     }
 }
