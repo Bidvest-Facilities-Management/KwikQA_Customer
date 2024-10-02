@@ -7,14 +7,6 @@ import { AuthservService } from '../../_services/authserv.service';
 import { MobilityService } from '../../_services/mobility.service';
 import { VariablesStateService } from '../../_services/variables-state.service';
 
-interface MenuItem {
-    NAME: string;
-    REQROLE?: string;
-    METHOD?: string;
-    CLASS?: string;
-    EVENT?: string;
-}
-
 @Component({
     selector: 'app-navbar',
     standalone: true,
@@ -29,13 +21,14 @@ export class NavbarComponent {
     username = '';
     isMobileMenuOpen = false;
     activeItem: string = '';
-    menu: MenuItem[] = [
-        { NAME: 'Confirmations', METHOD: 'GET_CONFIRMLIST', CLASS: 'KWIK' },
-        { NAME: 'Vendor Finance', REQROLE: 'FINVIEW',  METHOD: 'GET_QALIST', CLASS: 'KWIK' },
-        { NAME: 'BFM Finance', REQROLE: 'BFMFIN',  METHOD: 'GET_QALIST', CLASS: 'KWIK' },
-    ];
+
+    menu = [
+        { NAME: "ATC Approval", FILTER: "ACOM", REQROLE: "ATCFINVIEW", WC: "*", EVENT: "", CLASS: "KWIK", METHOD: "GET_QALIST", APPROVE: "ATCFINDONE", REJECT: "ATCFINREJ"},
+        { NAME: "BFM Finance", FILTER: "QCOM", REQROLE: "BFMFIN", WC: "*", EVENT: "ZVENDFINDONE", CLASS: "KWIK", METHOD: "GET_QALIST", APPROVE: "BFMFINDONE", REJECT: "BFMFINREJ" },
+        { NAME: "Confirmations", FILTER: "*", REQROLE: "", WC: "", EVENT: "", CLASS: "KWIK", METHOD: "GET_CONFIRMLIST", APPROVE: "", REJECT: "" }
+    ]
     
-    filteredMenu: MenuItem[] = [];
+    filteredMenu: any = [];
     userRoles: any = [];
     
     constructor(

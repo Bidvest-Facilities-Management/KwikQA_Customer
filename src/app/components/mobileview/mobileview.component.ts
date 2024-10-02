@@ -92,33 +92,49 @@ export class MobileviewComponent {
     }
 
     approveOrder(){ 
+
         if (this.activeItem === 'BFM Finance') {
-            const context = { CLASS: 'KWIK_ACTIONS', METHOD: 'SEND_TO_ATCFIN' }
-            const data = { ORDERNO: this.orderno, TOKEN: this.token, ACTION:"BFMFINAPP", REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, TOKEN: this.token, CODE:"BFMFINDONE", REASON: this.lastcomment.lastreply }
             this.apiserv.approveQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
         }
         if (this.activeItem === 'Vendor Finance') {
-            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
-            const data = { ORDERNO: this.orderno, ACTION:"VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            this.apiserv.approveQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
+        if (this.activeItem === 'ATC Approval') {
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "ATCFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
             this.apiserv.approveQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
         }
     }
+
     rejectOrder(){
 
         if (this.activeItem === 'BFM Finance') {
-            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
-            const data = { ORDERNO: this.orderno, TOKEN: this.token, ACTION: "BFMFINREJ" , REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, TOKEN: this.token, CODE: "BFMFINREJ" , REASON: this.lastcomment.lastreply }
             this.apiserv.rejectQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
         }
         if (this.activeItem === 'Vendor Finance') {
-            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
-            const data = { ORDERNO: this.orderno, ACTION:"VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "VENDFINREJ", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            this.apiserv.rejectQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
+        if (this.activeItem === 'ATC Approval') {
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "ATCFINREJ", TOKEN: this.token, REASON: this.lastcomment.lastreply }
             this.apiserv.rejectQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
