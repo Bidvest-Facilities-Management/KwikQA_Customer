@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../_services/api.service';
@@ -22,11 +22,7 @@ export class NavbarComponent {
     isMobileMenuOpen = false;
     activeItem: string = '';
 
-    menu = [
-        { NAME: "ATC Approval", FILTER: "ACOM", REQROLE: "ATCFINVIEW", WC: "*", EVENT: "", CLASS: "KWIK", METHOD: "GET_QALIST", APPROVE: "ATCFINDONE", REJECT: "ATCFINREJ"},
-        { NAME: "BFM Finance", FILTER: "QCOM", REQROLE: "BFMFIN", WC: "*", EVENT: "ZVENDFINDONE", CLASS: "KWIK", METHOD: "GET_QALIST", APPROVE: "BFMFINDONE", REJECT: "BFMFINREJ" },
-        { NAME: "Confirmations", FILTER: "*", REQROLE: "", WC: "", EVENT: "", CLASS: "KWIK", METHOD: "GET_CONFIRMLIST", APPROVE: "", REJECT: "" }
-    ]
+    menu: any = []
     
     filteredMenu: any = [];
     userRoles: any = [];
@@ -43,11 +39,10 @@ export class NavbarComponent {
         
         this.username = this.authserv.currentUserBS.value.USERNAME;
         this.userRoles = this.authserv.blankuser.ROLE;
-        this.filterMenu();
-        if(this.mobileserv.configValues.length){
-            this.menu = this.mobileserv.configValues
+        this.mobileserv.configValues.subscribe(values => {
+            this.menu = values;
             this.filterMenu();
-        }
+        });
     }
 
     filterMenu(): void {
@@ -66,18 +61,23 @@ export class NavbarComponent {
         if (item.NAME === 'Confirmations') {
             const user = this.authserv.blankuser
             const context = { CLASS: item.CLASS, METHOD: item.METHOD, TOKEN: user.TOKEN }
-            const data = { PERIOD: "60DAYS", FILTER: user.PARTNER || user.PARTNERS, EVENTTYPE: item.EVENT }
+            const data = { PERIOD: "60DAYS", FILTER: user.PARTNER || user.PARTNERS, EVENTTYPE: item.EVENT, VENDOR: "*" }
             this.apiserv.getConfirmationList(context, data);
             
         }else{
             const user = this.authserv.blankuser
             const context = { CLASS: item.CLASS, METHOD: item.METHOD, TOKEN: user.TOKEN }
-            const data = { PERIOD: "60DAYS", WC: user.PARTNER || user.PARTNERS, FILTER: 'QCOM', EVENTTYPE: item.EVENT }
+            const data = { PERIOD: "60DAYS", VENDOR: user.PARTNER || user.PARTNERS, FILTER: item.FILTER, EVENTTYPE: item.EVENT, WC: item.WC }
             this.apiserv.getConfirmationList(context, data);
         }
     }
     
     goto(url: string) {
+        if (this.apiserv.devprod === 'dev') {
+            localStorage.removeItem('KwikPortaldev');
+        } else {
+            localStorage.removeItem('KwikPortalprod');
+        }
         this.router.navigate([url]);
     }
 

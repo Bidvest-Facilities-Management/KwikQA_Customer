@@ -220,7 +220,7 @@ export class AuthservService {
             APIKEY: this.apikey,
             TOKEN: this.currentuser.TOKEN,
         };
-        let tstr = this.devprod == 'PROD' ? 'prod' : 'dev';
+        let tstr = this.apiserv.devprod;
         let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
         this.loading.next(true)
         this.postGEN(lclobj, 'VALIDRFCOTP', 'USER', url).subscribe((tokenin) => {

@@ -12,6 +12,7 @@ export class ApiService {
     devprod = 'DEV';
     environment = '';
     apikey = 'KWIKPORTAL';
+    apiUrl = 'https://data.bidvestfm.co.za/ZRFC3/request?sys='
     doc = window.location.href;
     currentuser = {TOKEN:''};
     public loadingBS = new BehaviorSubject(0);
@@ -31,8 +32,7 @@ export class ApiService {
         private varStateService: VariablesStateService
     
     ) {
-    this.setEnvironment();
-    
+        this.setEnvironment();
     }
 
     /***************************************************** */
@@ -41,11 +41,12 @@ export class ApiService {
             this.devprod = (this.doc.toUpperCase().includes('DEV') || this.doc.toUpperCase().includes('LOCAL')) ? 'dev' : 'prod';
             this.environment = GlobalConstants.environment + this.devprod;  " key to the LocalStorage Items";
             this.apikey = GlobalConstants.apikey;
+            this.apiUrl = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + this.devprod
         }
     }
     /*******postJSGen** Return non-array***************************************************** */
     postGEN(lclobj: any, methodname: string, classname: string = "KWIK", dest = this.devprod) {
-        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + 'prod'
+        let url = this.apiUrl + dest
         const httpOptions = {
             headers: new HttpHeaders({
                 'Content-Type': 'application/json',
@@ -61,7 +62,7 @@ export class ApiService {
             data: lclobj
         };
 
-        let mypost = this.http.post(url,call2, httpOptions);
+        let mypost = this.http.post(this.apiUrl,call2, httpOptions);
 
         return mypost.pipe(
             map(data => {
@@ -91,9 +92,9 @@ export class ApiService {
     getTable(tablename: string = '') {
         let lclobj = { PERIOD: '60DAYS', FILTER: 'HCOM' }
         let tstr = this.devprod == 'PROD' ? 'prod' : 'prod';
-        let url = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + tstr;
+        let url = this.apiUrl + tstr;
 
-        return tablename != '60DAYS' ? this.postGEN(lclobj, 'GET_QALIST', 'KWIK', url) : this.postGEN(lclobj, 'GET_GMP', 'CONFIG', url);
+        return tablename != '60DAYS' ? this.postGEN(lclobj, 'GET_QALIST', 'KWIK', this.apiUrl) : this.postGEN(lclobj, 'GET_GMP', 'CONFIG', this.apiUrl);
     }
     getGMPTable(tablename: string = '', filter1 = '', filter2 = '') {
         let lclobj = { TABLENAME: tablename, FILTER1: filter1, FILTER2: filter2 }

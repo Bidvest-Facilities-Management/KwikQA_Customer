@@ -218,7 +218,7 @@ export class MobileviewComponent {
         const data = { ORDERNO: this.orderno, MATUSED: JSON.stringify(this.mobileserv.materialsused) }
 
         try {
-            const res = await axios.post('https://data.bidvestfm.co.za/ZRFC3/request?sys=prod', {context, data}, {
+            const res = await axios.post(this.apiserv.apiUrl, {context, data}, {
                 headers: {
                     token: 'BK175mqMN0',
                 }

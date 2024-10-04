@@ -16,7 +16,7 @@ export class MobilityService {
     materialsused:any[] = [];
     materials:any[] = [];
     photosloaded:any[] = [];
-    configValues:any[] = [];
+    configValues: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
     prooftype = '';
     devprod = 'dev';
     sitedetail = {caseid:'', location:''};
@@ -115,7 +115,7 @@ export class MobilityService {
             if (!reply || reply.RESULT.length == 0) {
                 return
             }
-            this.configValues = reply.RESULT;
+            this.configValues.next(reply.RESULT);
         })
     }
 }

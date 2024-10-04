@@ -67,8 +67,8 @@
                                 <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
                                 <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                 <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
-                                <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
+                                <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sales Price</th>
                                 <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" ></th>
                             </tr>
                         </thead>
@@ -96,13 +96,13 @@
                                     <ng-template #viewOnlyQuantity>{{ material.quantity }}</ng-template>
                                 </td>
                                 <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
-                                    {{ material.sellprice}}
-                                </td>
-                                <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
                                     <ng-container *ngIf="canAddMaterial && (material.price == 0 || material.price == null || material.price === '' || editingPrice === i); else viewOnlyPrice">
                                         <input type="number" [(ngModel)]="material.price" (focus)="startEditingPrice(i)" (blur)="stopEditingPrice(i)" class="border rounded px-2 py-1 w-full">
                                     </ng-container>
                                     <ng-template #viewOnlyPrice>{{ material.price}}</ng-template>
+                                </td>
+                                <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
+                                    {{ material.sellprice}}
                                 </td>
                                 <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500" >
                                     <button (click)="removeMaterial(i)" class="text-red-500 hover:text-red-700">Remove</button>
