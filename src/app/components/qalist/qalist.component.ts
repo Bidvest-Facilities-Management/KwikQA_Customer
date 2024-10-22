@@ -68,7 +68,11 @@ export class QalistComponent {
     showmobile(orderview: any = {}){
         //this.varStateService.changeBottomSheet(true)
         this.currentorderno = ('000000000000' + orderview.ORDERNO).slice(-12);
-        this.router.navigate(['pod', this.currentorderno]);
+        //this.router.navigate(['pod', this.currentorderno]);
+    }
+
+    resetOrderno() {
+        this.currentorderno = '';  // Reset the order number
     }
 
     exportexcel(): void {

@@ -1,11 +1,11 @@
 <!-- Bottom sheet overlay -->
-  <div *ngIf="isBottomSheetOpen" (click)="closeBottomSheet()" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
+  <div *ngIf="orderno" (click)="closeDialog()" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
 
   <!-- Bottom sheet content -->
-  <div *ngIf="isBottomSheetOpen" class="fixed bottom-0 left-0 right-0 z-50 max-h-full">
-        <div class="bg-white rounded-t-lg p-6 shadow-lg max-h-[95vh] overflow-y-auto transform transition-transform ease-out duration-300" [ngClass]="{'translate-y-0': isBottomSheetOpen, 'translate-y-full': !isBottomSheetOpen}">
+  <div *ngIf="orderno" class="fixed bottom-0 left-0 right-0 z-50 max-h-full">
+        <div class="bg-white rounded-t-lg p-6 shadow-lg h-[100vh] overflow-y-auto transform transition-transform ease-out duration-300" [ngClass]="{'translate-y-0': orderno, 'translate-y-full': !orderno}">
            <!-- Floating Close Button -->
-            <button class="fixed no-print top-6 right-6 h-16 w-16 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition duration-300 ease-in-out" (click)="closeBottomSheet()">
+            <button class="fixed no-print top-6 right-6 h-16 w-16 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition duration-300 ease-in-out" (click)="closeDialog()">
                 ✕
             </button>
 
@@ -77,8 +77,8 @@
                                         <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Material</th>
                                         <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                                         <th class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-                                        <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
-                                        <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                        <th *ngIf="canAddMaterial || activeItem == 'ATC Approval'" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Selling Price</th>
+                                        <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cost Price</th>
                                         <th *ngIf="canAddMaterial" class="px-1.5 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" ></th>
                                     </tr>
                                 </thead>
@@ -105,7 +105,7 @@
                                             </ng-container>
                                             <ng-template #viewOnlyQuantity>{{ material.quantity }}</ng-template>
                                         </td>
-                                        <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
+                                        <td *ngIf="canAddMaterial || activeItem == 'ATC Approval'" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
                                             {{ material.sellprice}}
                                         </td>
                                         <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500">
@@ -142,7 +142,7 @@
                         </div>
                         
                         <!-- Approval/Rejection Buttons -->
-                        <div *ngIf="canAddMaterial" class="bg-white shadow-md rounded-lg p-6 mb-8 no-print">
+                        <div *ngIf="canAddMaterial || activeItem == 'ATC Approval'" class="bg-white shadow-md rounded-lg p-6 mb-8 no-print">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700">Quality Assurance Decision</h2>
                             <div class="flex space-x-4">
                                 <button (click)="approveOrder()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">

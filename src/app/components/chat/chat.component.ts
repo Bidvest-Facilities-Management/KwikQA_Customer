@@ -43,19 +43,9 @@ export class ChatComponent implements AfterViewInit {
     }
 
     ngOnInit(): void {
-    
-        this.chats = [{    id: 0, COMMENT_TEXT: this.dataserv.xtdbtoa(this.replytext), APIKEY: this.apikey, REFERENCE: this.orderno, COMMENT_AREA: this.section,  COMMENTBY: this.commentby, STATUS:'A', PARENT_ID: 0
-    }] ;
-    
-
-    setTimeout(() => {
         this.getComments();
-        this.subs.push(this.dataserv.chat$.subscribe((data) => {
-        // this.chats = data;
-        }))},500
-    );  
-    
     }
+    
     ngOnDestroy(): void {
         this.subs.forEach(sub => sub.unsubscribe());
     } 
@@ -89,7 +79,7 @@ export class ChatComponent implements AfterViewInit {
         let reference = this.orderno == null ? '' : ('00000' + this.orderno).slice(-12);
         let url = this.apiserv.apiUrl;
         this.dataserv.postGEN({ ORDERNO: reference, GET_PARTNER: 'A' }, "GET_CHAT", "KWIK", url).subscribe((data) => {
-            
+
         });
         this.dataserv.postGEN({ REFERENCE: reference, APIKEY:this.apikey, COMMENT_AREA: this.section, url }, "GET_CHAT", "COMMENTS").subscribe((data) => {
             let temp = JSON.parse(data.RESULT);
@@ -110,9 +100,11 @@ export class ChatComponent implements AfterViewInit {
 
     scrollToBottom(): void {
         try {
-        if (this.chatBox)
-        this.chatBox.nativeElement.scrollTop = this.chatBox?.nativeElement.scrollHeight;
-        } catch (err) { }
+            if (this.chatBox)
+            this.chatBox.nativeElement.scrollTop = this.chatBox?.nativeElement.scrollHeight;
+        } catch (err) {
+            
+         }
     }
  
 }

@@ -1,10 +1,9 @@
-import { Component, EventEmitter, ElementRef, ViewChild, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, ElementRef, ViewChild, Input, OnInit, Output, SimpleChanges, OnChanges } from '@angular/core';
 import { ChatComponent } from '../../components/chat/chat.component';
 import { FormsModule, ReactiveFormsModule  } from '@angular/forms';
 import { ApiService } from '../../_services/api.service';
 import { MobilityService } from '../../_services/mobility.service';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Params, Router } from '@angular/router';
 import { AuthservService } from '../../_services/authserv.service';
 import { LightboxModule, Lightbox } from 'ngx-lightbox';
 import { VariablesStateService } from '../../_services/variables-state.service';
@@ -19,15 +18,18 @@ import { Subscription } from 'rxjs';
   templateUrl: './bottom-sheet.component.html',
   styleUrl: './bottom-sheet.component.css'
 })
-export class BottomSheetComponent implements OnInit {
+export class BottomSheetComponent implements OnInit, OnChanges {
     
-    @Input() orderno: string = ''
-    isBottomSheetOpen: boolean = false
+    @Input() orderno = ''
+    @Output() closeSheet: EventEmitter<void> = new EventEmitter<void>();
+    token = this.authserv.currentuser.TOKEN
+    filter="HCOM" 
     loadingBS = 0
+    subs: Subscription[] = [];
+    lastcomment = {lastreply: '' };
     canAddMaterial: boolean = false;
     filteredMaterials: any [] = []
     activeItem: string = '';
-    subs: Subscription[] = [];
     editingPrice: number | null = null;
     loading: boolean = false
     newMaterial: any = {
@@ -36,45 +38,40 @@ export class BottomSheetComponent implements OnInit {
         quantity: 0,
         price: null
     };
+    varSubscription: Subscription;
     @ViewChild('content', { static: false }) content!: ElementRef;
 
     toastMessage: string = '';
     toastType: 'success' | 'error' | 'info' = 'info';
     isToastVisible: boolean = false;
-
-    token = this.authserv.currentuser.TOKEN
-    lastcomment = {lastreply: '' };
+    isBottomSheetOpen: boolean = false
 
     constructor(
+        private apiserv:ApiService,
         private authserv: AuthservService,
         public mobileserv:MobilityService,
-        private apiserv:ApiService,
-        private router:Router,
         private lightbox: Lightbox,
         private varStateService: VariablesStateService
-    ){}
-
-    ngOnInit(): void {
-
-        if (this.isBottomSheetOpen) {
-            console.log(this.orderno)
-        }
-        this.subs.push(this.apiserv.loadingBS.subscribe(item => {
-                this.loadingBS = item;
-            })
-        );
+    ) { }
+  
     
-        this.varStateService.bottomSheetOpen.subscribe(value => {
-            if (value && this.orderno) {
-                console.log(this.orderno)
-                this.mobileserv.getExistingView(this.orderno);
-            }
-            this.isBottomSheetOpen = value
+    ngOnInit(): void {
+        
+        this.varSubscription = this.varStateService.currentActiveMenuItem.subscribe(menuItem => {
+            this.activeItem = menuItem
+            this.canAddMaterial = menuItem === 'BFM Finance'
+            console.log(this.canAddMaterial)
+        });
+
+        this.varSubscription = this.varStateService.loading.subscribe(value => {
+            this.loading = value
         });
     }
-    
-    closeBottomSheet() {
-        this.varStateService.changeBottomSheet(false)
+
+    ngOnChanges(changes: SimpleChanges) {
+        if (changes['orderno'] && this.orderno) {
+            this.mobileserv.getExistingView(this.orderno);        
+        }
     }
 
     hasAnyRole(roles: string[]): boolean {
@@ -82,9 +79,12 @@ export class BottomSheetComponent implements OnInit {
         return roles.some(role => userRoles.includes(role));
     }
 
+    ngOnDestroy(): void {
+        this.subs.forEach(sub => sub.unsubscribe());
+    };
 
     closeDialog(){
-        this.router.navigate(['/home']);
+        this.closeSheet.emit();
     }
 
     removeLeadingZeros(text: string) {
@@ -92,33 +92,49 @@ export class BottomSheetComponent implements OnInit {
     }
 
     approveOrder(){ 
+
         if (this.activeItem === 'BFM Finance') {
-            const context = { CLASS: 'KWIK_ACTIONS', METHOD: 'SEND_TO_ATCFIN' }
-            const data = { ORDERNO: this.orderno, TOKEN: this.token, ACTION:"BFMFINAPP", REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, TOKEN: this.token, CODE:"BFMFINDONE", REASON: this.lastcomment.lastreply }
             this.apiserv.approveQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
         }
         if (this.activeItem === 'Vendor Finance') {
-            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
-            const data = { ORDERNO: this.orderno, ACTION:"VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            this.apiserv.approveQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
+        if (this.activeItem === 'ATC Approval') {
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "ATCFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
             this.apiserv.approveQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
         }
     }
+
     rejectOrder(){
 
         if (this.activeItem === 'BFM Finance') {
-            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
-            const data = { ORDERNO: this.orderno, TOKEN: this.token, ACTION: "BFMFINREJ" , REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, TOKEN: this.token, CODE: "BFMFINREJ" , REASON: this.lastcomment.lastreply }
             this.apiserv.rejectQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
         }
         if (this.activeItem === 'Vendor Finance') {
-            const context = { CLASS: 'KWIK', METHOD: 'FINVIEW_QA' }
-            const data = { ORDERNO: this.orderno, ACTION:"VENDFINDONE", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "VENDFINREJ", TOKEN: this.token, REASON: this.lastcomment.lastreply }
+            this.apiserv.rejectQAPOD(context, data);
+            this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
+            this.closeDialog();
+        }
+        if (this.activeItem === 'ATC Approval') {
+            const context = { CLASS: 'KWIK_QA', METHOD: 'PUT_DECISION' }
+            const data = { ORDERNO: this.orderno, CODE: "ATCFINREJ", TOKEN: this.token, REASON: this.lastcomment.lastreply }
             this.apiserv.rejectQAPOD(context, data);
             this.apiserv.confListBS.next(this.apiserv.confListBS.value.filter((ele:any) => ele.ORDERNO != this.orderno));
             this.closeDialog();
@@ -202,7 +218,7 @@ export class BottomSheetComponent implements OnInit {
         const data = { ORDERNO: this.orderno, MATUSED: JSON.stringify(this.mobileserv.materialsused) }
 
         try {
-            const res = await axios.post('https://data.bidvestfm.co.za/ZRFC3/request?sys=prod', {context, data}, {
+            const res = await axios.post(this.apiserv.apiUrl, {context, data}, {
                 headers: {
                     token: 'BK175mqMN0',
                 }
