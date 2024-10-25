@@ -60,7 +60,6 @@ export class BottomSheetComponent implements OnInit, OnChanges {
         this.varSubscription = this.varStateService.currentActiveMenuItem.subscribe(menuItem => {
             this.activeItem = menuItem
             this.canAddMaterial = menuItem === 'BFM Finance'
-            console.log(this.canAddMaterial)
         });
 
         this.varSubscription = this.varStateService.loading.subscribe(value => {
