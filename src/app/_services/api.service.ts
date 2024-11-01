@@ -41,7 +41,7 @@ export class ApiService {
             this.devprod = (this.doc.toUpperCase().includes('DEV') || this.doc.toUpperCase().includes('LOCAL')) ? 'dev' : 'prod';
             this.environment = GlobalConstants.environment + this.devprod;  " key to the LocalStorage Items";
             this.apikey = GlobalConstants.apikey;
-            this.apiUrl = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + this.devprod
+            this.apiUrl = 'https://data.bidvestfm.co.za/ZRFC3/request?sys=' + 'prod'
         }
     }
     /*******postJSGen** Return non-array***************************************************** */

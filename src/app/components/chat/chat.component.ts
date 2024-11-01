@@ -75,13 +75,14 @@ export class ChatComponent implements AfterViewInit {
         this.replytext = '';
         return null;
     }
+
     getComments(): void {
         let reference = this.orderno == null ? '' : ('00000' + this.orderno).slice(-12);
         let url = this.apiserv.apiUrl;
         this.dataserv.postGEN({ ORDERNO: reference, GET_PARTNER: 'A' }, "GET_CHAT", "KWIK", url).subscribe((data) => {
 
         });
-        this.dataserv.postGEN({ REFERENCE: reference, APIKEY:this.apikey, COMMENT_AREA: this.section, url }, "GET_CHAT", "COMMENTS").subscribe((data) => {
+        this.dataserv.postGEN({ REFERENCE: reference, APIKEY:this.apikey, STATUS: "*", COMMENT_AREA: this.section, url }, "GET_CHAT", "COMMENTS").subscribe((data) => {
             let temp = JSON.parse(data.RESULT);
             let out = temp.map((item: { COMMENT_TEXT: string; REFERENCE: any; COMMENT_AREA: any; COMMENTBY: any; STATUS: any; DATEOF: string; TIMEOF: string; }) => {
                 return {
