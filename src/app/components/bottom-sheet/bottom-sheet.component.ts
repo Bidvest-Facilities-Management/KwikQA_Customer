@@ -155,39 +155,7 @@ export class BottomSheetComponent implements OnInit, OnChanges {
     }
 
     exportToPDF(): void {
-        const htmlContent = `
-            <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
-                <script src="https://cdn.tailwindcss.com"></script>
-                </head>
-                <body>
-                    ${this.content.nativeElement.innerHTML}
-                </body>
-            </html>
-        `;
-        fetch('http://localhost:3001/generate-pdf', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ htmlContent: htmlContent }),
-          })
-            .then(response => response.blob())
-            .then(blob => {
-              // Create a URL for the blob and open the PDF in a new tab
-              const url = window.URL.createObjectURL(blob);
-              const a = document.createElement('a');
-              a.href = url;
-              a.download = 'generated.pdf';
-              document.body.appendChild(a);
-              a.click();
-              a.remove();
-            })
-            .catch(error => console.error('Error generating PDF:', error));
+        window.print();
     }
 
     removeMaterial(index: number) {
