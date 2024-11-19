@@ -148,11 +148,8 @@
                                 <button (click)="approveOrder()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                                     Approve
                                 </button>
-                                <button [disabled]="lastcomment.lastreply.length < 1" (click)="rejectOrder()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                                <button (click)="rejectOrder()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
                                     Reject
-                                </button>
-                                <button (click)="exportToPDF()" class="px-4 py-2 self-end bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-                                    PDF
                                 </button>
                             </div>
                         </div>
@@ -165,6 +162,6 @@
                 </div>
             </div>
 
-            <app-toast [message]="toastMessage" [type]="toastType" [isVisible]="isToastVisible" (closed)="onToastClosed()"></app-toast>
         </div>
-  </div>
+    </div>
+    <app-toast [message]="toastMessage" [type]="toastType" [isVisible]="isToastVisible" (closed)="onToastClosed()"></app-toast>
