@@ -158,10 +158,71 @@
                     <!-- Chat Section -->
                     <div *ngIf="mobileserv.loadedview['ORDERNO'] == orderno"  class="lg:col-span-1 no-print">
                         <app-chat [apikey]="'KWIKPORTAL'" [orderno]="('00000000' + mobileserv.loadedview['ORDERNO']).slice(-12)" [height]="200" [section]="'BFM-QA'" [commentby]="token"  [lastreply]="lastcomment"></app-chat>
+                        
+                        
+                       <!-- Checklist Responses Section -->
+                        <div class="relative overflow-visible">
+                            <!-- Toggle Button -->
+                            <button (click)="toggleChecklistResponses()" class="flex items-center justify-between w-full bg-blue-50 hover:bg-blue-100 p-3 rounded-lg transition-colors duration-300 focus:outline-none">
+                                <div class="flex items-center gap-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                                    </svg>
+                                    <span class="text-lg font-semibold text-gray-800">Site Investigation Checklist</span>
+                                </div>
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform duration-300" [class.rotate-180]="showChecklistResponses" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <!-- Sliding Checklist Responses -->
+                            <div class="transition-all duration-300 ease-in-out" [class.hidden]="!showChecklistResponses">
+                                <div class="bg-white shadow-md rounded-lg p-4 mt-2">
+                                    <div *ngFor="let checklistItem of checklistItems" class="border-b pb-4 mb-4 last:border-b-0 last:pb-0">
+                                        <div class="gap-4">
+                                            <div class="mb-2">
+                                                <p class="text-sm font-medium text-gray-500">Description</p>
+                                                <p class="text-base font-semibold text-gray-800">{{ checklistItem.description }}</p>
+                                            </div>
+                                            <div class="mb-2">
+                                                <p class="text-sm font-medium text-gray-500">Selected Action</p>
+                                                <p class="text-base font-semibold text-gray-800">
+                                                    {{ itemResponses[checklistItem.operation]?.action || 'No action selected' }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-2">
+                                            <p class="text-sm font-medium text-gray-500">Feedback</p>
+                                            <p class="text-base font-semibold text-gray-800">
+                                                {{ itemResponses[checklistItem.operation]?.feedback || 'No feedback provided' }}
+                                            </p>
+                                        </div>
+                                        
+                                        <!-- Checklist Item Photos -->
+                                        <div *ngIf="checklistItem.photos.length > 0" class="mt-4">
+                                            <p class="text-sm font-medium text-gray-500 mb-2">Photos</p>
+                                            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                                                <div *ngFor="let photo of checklistItem.photos; let i = index" class="relative group">
+                                                    <div *ngIf="itemResponses[checklistItem.operation]?.photos[i]['PH_' + (i+1)]" 
+                                                        class="relative overflow-hidden rounded-lg shadow-md">
+                                                        <img
+                                                            [src]="itemResponses[checklistItem.operation].photos[i]['PH_' + (i+1)]" 
+                                                            class="w-full h-24 object-cover transition-transform duration-300 group-hover:scale-110"
+                                                        >
+                                                        <div (click)="open2(i)" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                                                    </div>
+                                                    <p class="text-xs text-gray-600 mt-1 truncate">{{ photo }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-
         </div>
     </div>
     <app-toast [message]="toastMessage" [type]="toastType" [isVisible]="isToastVisible" (closed)="onToastClosed()"></app-toast>
