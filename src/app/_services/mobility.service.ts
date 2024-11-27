@@ -16,6 +16,7 @@ export class MobilityService {
     materialsused:any[] = [];
     materials:any[] = [];
     photosloaded:any[] = [];
+    checklist:any[] = [];
     configValues: BehaviorSubject<any[]> = new BehaviorSubject<any[]>([]);
     prooftype = '';
     devprod = 'dev';
@@ -60,6 +61,7 @@ export class MobilityService {
             this.sitedetail.caseid = this.siteview.find(item=>  item.CH == 'Case ID').CV;
             this.sitedetail.location = this.siteview.find(item=>  item.CH == 'Location').CV;
         });
+
         this.apiserv.postGEN({ ORDERNO: orderno,  "LOOKUP": "X"}, 'GET_KWIKMATERIALS', 'KWIK',this.devprod).subscribe((data: any) => {
             if (data.ERROR != '') {
                 return;
@@ -72,6 +74,7 @@ export class MobilityService {
                 "noprice": "",
             }));
         });
+
         this.apiserv.postGEN(lclobj, 'VIEW_TECHCONFIRM', 'KWIK',this.devprod).subscribe((data: any) => {
         //  this.apiserv.postGEN(lclobj, 'GET_DETAIL', 'KWIK_QA',this.devprod).subscribe((data: any) => {
             if (data.RESULT.ORDERNO != orderno) {
@@ -96,6 +99,13 @@ export class MobilityService {
             }
             this.filterActivityCodes(data.RESULT.ACTIVITY_TYPE);
             this.varStateService.changeLoading(false);
+        });
+
+        this.apiserv.postGEN(lclobj, 'GET_OPERATIONS', 'KWIK_INTERNAL',this.devprod).subscribe((data: any) => {
+            if (data.ERROR != '') {
+                return;
+            }
+            this.checklist = data.RESULT;
         });
     }
     /***************************************************** */
