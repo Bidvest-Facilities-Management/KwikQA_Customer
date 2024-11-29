@@ -159,9 +159,18 @@ export class BottomSheetComponent implements OnInit, OnChanges {
         this.lightbox.open(albums, index);
     }
 
-    open2(index: number): void {
-        this.lightbox.open(this.transformData(this.itemResponses), index);
-    }
+    open2(operationIndex: number, photoIndex: number): void {
+        const data = this.formatChecklist(this.mobileserv.checklist)
+        const albums = data[operationIndex].photos.map( (photo:any) => {
+            const photoKey = Object.keys(photo).find(key => key.startsWith('PH_'));
+            return {
+                src: photo[photoKey], 
+                caption: photo.NAME,  
+                thumb: photo[photoKey] 
+            };
+        });
+        this.lightbox.open(albums, photoIndex);
+    }        
 
     transformData = (data: any): any[] => {
         const albums = [];
@@ -188,8 +197,110 @@ export class BottomSheetComponent implements OnInit, OnChanges {
         this.lightbox.close();
     }
 
-    exportToPDF(): void {
-        window.print();
+    async exportToPDF(elementId: string, filename: string = 'download.pdf') {
+
+        await new Promise(resolve => setTimeout(resolve, 0));
+
+        const element = document.getElementById(elementId);
+        if (!element) return;
+
+        const processedHtml = this.prepareHtmlForPdf(element);
+    
+        // Create a proper HTML document
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+                <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                    body {
+                    font-family: Arial, sans-serif;
+                    padding: 20px;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                        page-break-inside: avoid;
+                    }
+                    .no-print {
+                        display: none !important;
+                    }
+                </style>
+            </head>
+            <body>
+                ${processedHtml}
+            </body>
+            </html>
+        `;
+    
+        const body = {
+            url: '', // Leave empty when using content
+            content: htmlContent,  // html-pdf-node expects 'content' not 'html'
+            options: {
+            format: 'A4',
+            margin: {
+                top: 20,    // Numbers instead of strings
+                right: 20,
+                bottom: 20,
+                left: 20
+            },
+            printBackground: true,
+            preferCSSPageSize: true
+            }
+        };
+    
+        const headers = {
+            'Content-Type': 'application/json',
+            'apikey': 'iAXTKUc6v0qU942mtGut51XzSsVo0p1532w9cCkaV661BzavI6'
+        };
+    
+        try {
+            this.loading = true
+            const response = await axios.post('https://ag.bidvestfm.co.za/VENDORS/BFMFIN/generate-pdf', body, {
+                headers,
+                responseType: 'arraybuffer'  // Important for receiving binary data
+            });
+    
+            // Create blob from array buffer
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+        
+            // Cleanup
+            window.URL.revokeObjectURL(url);
+            this.loading = false
+        } catch (error) {
+            if (axios.isAxiosError(error)) {
+                if (error.response?.data) {
+                    const decoder = new TextDecoder('utf-8');
+                    const errorMessage = decoder.decode(error.response.data);
+                    console.error('Server error:', errorMessage);
+                }
+            }
+            console.error('Error generating PDF:', error);
+            this.loading = false
+            throw error;
+        }
+    }
+
+    prepareHtmlForPdf(element: HTMLElement): string {
+        const tempDiv = element.cloneNode(true) as HTMLElement;
+        const inputs = tempDiv.getElementsByTagName('input');
+        
+        Array.from(inputs)
+          .reverse()
+          .forEach(input => {
+            const span = document.createElement('span');
+            span.textContent = input.value;
+            input.parentNode?.replaceChild(span, input);
+          });
+          
+        return tempDiv.innerHTML;
     }
 
     removeMaterial(index: number) {
@@ -272,28 +383,15 @@ export class BottomSheetComponent implements OnInit, OnChanges {
     }
 
     formatChecklist (rawData: any[]) {
-      
-        rawData.forEach((item) => {
-            // Parse the DATA field which contains the JSON string
-            const dataObj = JSON.parse(item.DATA);
-        
-            // Create checklist item
-            const checklistItem: any = {
+
+        return rawData.map(item => {
+            const parsedData = JSON.parse(item.DATA);
+    
+            return {
                 operation: item.EVENTTYPE,
-                description: item.EVENTTYPE,
-                photos: Array(dataObj.photos?.length || 0).fill('Photo') // Placeholder text for photo labels
-            };
-        
-            // Add to checklistItems if not already present
-            if (!this.checklistItems.some(ci => ci.operation === item.EVENTTYPE)) {
-                this.checklistItems.push(checklistItem);
-            }
-        
-            // Create item response
-            this.itemResponses[item.EVENTTYPE] = {
-                action: dataObj.action || 'No action',
-                photos: dataObj.photos || [],
-                feedback: '' // Add feedback if you have it in your data
+                action: parsedData.action,
+                feedback: parsedData.feedback, 
+                photos: parsedData.photos 
             };
         });
     }

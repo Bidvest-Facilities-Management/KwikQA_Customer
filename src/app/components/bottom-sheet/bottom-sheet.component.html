@@ -3,7 +3,7 @@
 
   <!-- Bottom sheet content -->
   <div *ngIf="orderno" class="fixed bottom-0 left-0 right-0 z-50 max-h-full">
-        <div class="bg-white rounded-t-lg p-6 shadow-lg h-[100vh] overflow-y-auto transform transition-transform ease-out duration-300" [ngClass]="{'translate-y-0': orderno, 'translate-y-full': !orderno}">
+        <div id="myPDF" class="bg-white rounded-t-lg p-6 shadow-lg h-[100vh] overflow-y-auto transform transition-transform ease-out duration-300" [ngClass]="{'translate-y-0': orderno, 'translate-y-full': !orderno}">
            <!-- Floating Close Button -->
             <button class="fixed no-print top-6 right-6 h-16 w-16 bg-red-600 text-white p-3 rounded-full shadow-lg hover:bg-red-700 transition duration-300 ease-in-out" (click)="closeDialog()">
                 ✕
@@ -114,7 +114,7 @@
                                             </ng-container>
                                             <ng-template #viewOnlyPrice>{{ material.price}}</ng-template>
                                         </td>
-                                        <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500" >
+                                        <td *ngIf="canAddMaterial" class="px-1.5 whitespace-nowrap text-sm text-gray-500 no-print" >
                                             <button (click)="removeMaterial(i)" class="text-red-500 hover:text-red-700">Remove</button>
                                         </td>
                                     </tr>
@@ -142,14 +142,17 @@
                         </div>
                         
                         <!-- Approval/Rejection Buttons -->
-                        <div *ngIf="canAddMaterial || activeItem == 'ATC Approval'" class="bg-white shadow-md rounded-lg p-6 mb-8 no-print">
+                        <div class="bg-white shadow-md rounded-lg p-6 mb-8 no-print">
                             <h2 class="text-xl font-semibold mb-4 text-gray-700">Quality Assurance Decision</h2>
                             <div class="flex space-x-4">
-                                <button (click)="approveOrder()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
+                                <button *ngIf="canAddMaterial || activeItem == 'ATC Approval'" (click)="approveOrder()" class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-opacity-50">
                                     Approve
                                 </button>
-                                <button (click)="rejectOrder()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
+                                <button *ngIf="canAddMaterial || activeItem == 'ATC Approval'" (click)="rejectOrder()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-opacity-50">
                                     Reject
+                                </button>
+                                <button (click)="exportToPDF('myPDF')" class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
+                                    PDF
                                 </button>
                             </div>
                         </div>
@@ -161,7 +164,7 @@
                         
                         
                        <!-- Checklist Responses Section -->
-                        <div class="relative overflow-visible">
+                        <div *ngIf="formatChecklist(mobileserv.checklist).length > 0" class="relative overflow-visible">
                             <!-- Toggle Button -->
                             <button (click)="toggleChecklistResponses()" class="flex items-center justify-between w-full bg-blue-50 hover:bg-blue-100 p-3 rounded-lg transition-colors duration-300 focus:outline-none">
                                 <div class="flex items-center gap-3">
@@ -178,16 +181,16 @@
                             <!-- Sliding Checklist Responses -->
                             <div class="transition-all duration-300 ease-in-out" [class.hidden]="!showChecklistResponses">
                                 <div class="bg-white shadow-md rounded-lg p-4 mt-2">
-                                    <div *ngFor="let checklistItem of checklistItems" class="border-b pb-4 mb-4 last:border-b-0 last:pb-0">
+                                    <div *ngFor="let checklistItem of formatChecklist(mobileserv.checklist); let operationIndex = index" class="border-b pb-4 mb-4 last:border-b-0 last:pb-0">
                                         <div class="gap-4">
                                             <div class="mb-2">
                                                 <p class="text-sm font-medium text-gray-500">Description</p>
-                                                <p class="text-base font-semibold text-gray-800">{{ checklistItem.description }}</p>
+                                                <p class="text-base font-semibold text-gray-800">{{ checklistItem.operation }}</p>
                                             </div>
                                             <div class="mb-2">
                                                 <p class="text-sm font-medium text-gray-500">Selected Action</p>
                                                 <p class="text-base font-semibold text-gray-800">
-                                                    {{ itemResponses[checklistItem.operation]?.action || 'No action selected' }}
+                                                    {{ checklistItem?.action || 'No action selected' }}
                                                 </p>
                                             </div>
                                         </div>
@@ -195,7 +198,7 @@
                                         <div class="mb-2">
                                             <p class="text-sm font-medium text-gray-500">Feedback</p>
                                             <p class="text-base font-semibold text-gray-800">
-                                                {{ itemResponses[checklistItem.operation]?.feedback || 'No feedback provided' }}
+                                                {{ checklistItem?.feedback || 'No feedback provided' }}
                                             </p>
                                         </div>
                                         
@@ -204,24 +207,21 @@
                                             <p class="text-sm font-medium text-gray-500 mb-2">Photos</p>
                                             <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
                                                 <div *ngFor="let photo of checklistItem.photos; let i = index" class="relative group">
-                                                    <div *ngIf="itemResponses[checklistItem.operation]?.photos[i]['PH_' + (i+1)]" 
+                                                    <div *ngIf="checklistItem?.photos[i]['PH_' + (i+1)]" 
                                                         class="relative overflow-hidden rounded-lg shadow-md">
                                                         <img
-                                                            [src]="itemResponses[checklistItem.operation].photos[i]['PH_' + (i+1)]" 
+                                                            [src]="checklistItem.photos[i]['PH_' + (i+1)]" 
                                                             class="w-full h-24 object-cover transition-transform duration-300 group-hover:scale-110"
                                                         >
-                                                        <div (click)="open2(i)" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
+                                                        <div (click)="open2(operationIndex, i)" class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-300"></div>
                                                     </div>
-                                                    <p class="text-xs text-gray-600 mt-1 truncate">{{ photo }}</p>
+                                                    <p class="text-xs text-gray-600 mt-1 truncate">{{ photo.NAME }}</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Calls this function, do not remove!! -->
-                            <div>{{formatChecklist(mobileserv.checklist)}} </div>
                         </div>
                     </div>
                 </div>
